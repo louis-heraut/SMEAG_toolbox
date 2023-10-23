@@ -1,0 +1,119 @@
+# Copyright 2021-2023 Louis Héraut (louis.heraut@inrae.fr)*1,
+#                     Éric Sauquet (eric.sauquet@inrae.fr)*1
+#
+# *1   INRAE, France
+#
+# This file is part of AEAG_toolbox R toolbox.
+#
+# AEAG_toolbox R toolbox is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# AEAG_toolbox R toolbox is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with AEAG_toolbox R toolbox.
+# If not, see <https://www.gnu.org/licenses/>.
+
+
+# Script that manages the call to the right process in order to
+# realise analyses.
+
+
+if ('extract_data' %in% to_do) {
+    
+    data = read_tibble(filedir=tmppath,
+                       filename=paste0("data.fst"))
+    
+    meta = read_tibble(filedir=tmppath,
+                       filename=paste0("meta.fst"))
+    
+    for (i in 1:length(extract_data)) {
+        
+        extract = extract_data[[i]]
+
+        CARD_management(CARD=CARD_path,
+                        tmp=tmppath,
+                        layout=c(extract$name, "[",
+                                 extract$variables, "]"),
+                        overwrite=TRUE)
+
+
+        if (extract$type == "criteria") {
+            simplify = TRUE
+            expand = FALSE
+        } else if (extract$type == "serie") {
+            simplify = FALSE
+            expand = TRUE
+        }
+
+        cancel_lim = FALSE
+
+        res = CARD_extraction(data,
+                              CARD_path=CARD_path,
+                              CARD_dir=extract$name,
+                              CARD_tmp=tmppath,
+                              period=periodAll,
+                              simplify=simplify,
+                              suffix=extract$suffix,
+                              expand_overwrite=expand,
+                              cancel_lim=cancel_lim,
+                              rm_duplicates=TRUE,
+                              dev=FALSE,
+                              verbose=verbose)
+
+        dataEX = res$dataEX
+        metaEX = res$metaEX
+
+        trendEX = dplyr::tibble()
+        
+        for (i in 1:length(dataEX)) {
+            trendEX_var = process_trend(
+                dataEX[[i]],
+                metaEX=metaEX,
+                MK_level=level,
+                suffix=extract$suffix,
+                take_not_signif_into_account=TRUE,
+                period_trend=period_trend,
+                period_change=period_change,
+                exProb=exProb,
+                verbose=verbose)
+
+            if (nrow(trendEX) == 0) {
+                trendEX = trendEX_var
+            } else {
+                trendEX = dplyr::bind_rows(trendEX,
+                                           trendEX_var)
+            }
+        }
+
+        write_tibble(dataEX,
+                     filedir=tmppath,
+                     filename=paste0("dataEX_",
+                                     extract$name,
+                                     ".fst"))
+        write_tibble(metaEX,
+                     filedir=tmppath,
+                     filename=paste0("metaEX_",
+                                     extract$name,
+                                     ".fst"))
+
+        if (!is.null(period_trend)) {
+            trendEX$period = sapply(trendEX$period, paste0, collapse=" ")
+        }
+        if (!is.null(period_change)) {
+            trendEX$period_change = sapply(trendEX$period_change,
+                                           paste0, collapse=" ")
+        }
+        
+        write_tibble(trendEX,
+                     filedir=tmppath,
+                     filename=paste0("trendEX_",
+                                     extract$name,
+                                     ".fst"))
+    }
+}
