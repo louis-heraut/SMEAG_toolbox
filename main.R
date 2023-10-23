@@ -302,10 +302,10 @@ SMEAG_hydrologie =
              "QA",
              "QMNA",
              "VCN10",
-             "VCN30"
-             # "tVCN10",
-             # "debutBE",
-             # "dtBE"
+             # "VCN30",
+             "debutBE",
+             "tVCN10",
+             "dtBE"
          ),
          suffix=c("obs", "nat"))
 
