@@ -40,9 +40,27 @@ if (!read_tmp & !delete_tmp) {
                                 full.names=TRUE)
         data_files = gsub("[_][_]", "_", basename(data_paths))
 
+        
         if ("data" %in% var2save) {
-            file.copy(data_paths,
-                      file.path(today_resdir_tmp, data_files))
+            for (format in saving_format) {
+                if (length(saving_format) > 1) {
+                    today_resdir_format_tmp =
+                        file.path(today_resdir_tmp,
+                                  toupper(format))
+                    if (!(file.exists(today_resdir_format_tmp))) {
+                        dir.create(today_resdir_format_tmp,
+                                   recursive=TRUE)
+                    }
+                } else {
+                    today_resdir_format_tmp = today_resdir_tmp
+                }
+                # file.copy(data_paths,
+                          # file.path(today_resdir_tmp, data_files))
+                write_tibble(data,
+                             filedir=today_resdir_format_tmp,
+                             filename=paste0("data",
+                                             ".", format))
+            }
         }
         
         for (i in 1:length(extract_data)) {
@@ -88,16 +106,28 @@ if (!read_tmp & !delete_tmp) {
 
             for (format in saving_format) {
 
+                if (length(saving_format) > 1) {
+                    today_resdir_format_tmp =
+                        file.path(today_resdir_tmp,
+                                  toupper(format))
+                    if (!(file.exists(today_resdir_format_tmp))) {
+                        dir.create(today_resdir_format_tmp,
+                                   recursive=TRUE)
+                    }
+                } else {
+                    today_resdir_format_tmp = today_resdir_tmp
+                }
+
                 if ("meta" %in% var2save) {
                     write_tibble(meta,
-                                 filedir=today_resdir_tmp,
+                                 filedir=today_resdir_format_tmp,
                                  filename=paste0("meta",
                                                  ".", format))
                 }
 
                 if ("metaEX" %in% var2save) {
                     write_tibble(metaEX,
-                                 filedir=today_resdir_tmp,
+                                 filedir=today_resdir_format_tmp,
                                  filename=paste0("metaEX_",
                                                  extract$name,
                                                  ".", format))
@@ -105,7 +135,7 @@ if (!read_tmp & !delete_tmp) {
 
                 if ("dataEX" %in% var2save) {
                     write_tibble(dataEX,
-                                 filedir=today_resdir_tmp,
+                                 filedir=today_resdir_format_tmp,
                                  filename=paste0("dataEX_",
                                                  extract$name,
                                                  ".", format))
@@ -113,7 +143,7 @@ if (!read_tmp & !delete_tmp) {
 
                 if ("trendEX" %in% var2save) {
                     write_tibble(trendEX,
-                                 filedir=today_resdir_tmp,
+                                 filedir=today_resdir_format_tmp,
                                  filename=paste0("trendEX_",
                                                  extract$name,
                                                  ".", format))
@@ -144,6 +174,9 @@ if (!read_tmp & !delete_tmp) {
                     read_saving))
 
         read_saving_tmp = file.path(read_saving)
+        if (length(saving_format) > 1) {
+            read_saving_tmp = file.path(read_saving, "FST")
+        }
         
         for (i in 1:length(extract_data)) {
             extract = extract_data[[i]]

@@ -27,40 +27,64 @@
 if ('create_data' %in% to_do) {
     
     data = dplyr::tibble()
+    data_tmp = dplyr::tibble()
+    meta = dplyr::tibble()
+    meta_tmp = dplyr::tibble()
     
     for (i in 1:length(data_to_use)) {
         type = names(data_to_use)[i]
-        file = data_to_use[i]
-        
-        data_tmp = read_tibble(file.path(local_data_path, file))
-        data_tmp = select(data_tmp, -where(is.logical))
-        data_tmp = tidyr::pivot_longer(data_tmp,
-                                       cols=where(is.numeric),
-                                       names_to="Code", values_to="Q")
-        data_tmp = rename(data_tmp, Date=X)
-        data_tmp = arrange(data_tmp, Code)
+        dir = data_to_use[i]
+        Paths = list.files(file.path(computer_data_path, dir),
+                           full.names=TRUE)
 
+        if (all(grepl(obs_hydro_format, basename(Paths), fixed=TRUE))) {
+            data_tmp = create_data_HYDRO(computer_data_path,
+                                         dir,
+                                         basename(Paths),
+                                         verbose=verbose)
+            meta_tmp = create_meta_HYDRO(computer_data_path,
+                                         dir,
+                                         basename(Paths),
+                                         verbose=verbose)
+        } else {
+            Paths = Paths[!grepl("meta", Paths)]
+            data_tmp2 = dplyr::tibble()
+            for (path in Paths) {
+                data_tmp2 = bind_rows(bind_cols(Code=gsub("[_].*", "",
+                                                         basename(path)),
+                                               read_tibble(path)),
+                                     data_tmp2)
+            }
+            data_tmp2$Date = as.Date(data_tmp2$Date)
+            data_tmp2$Q = data_tmp2$Qls*1E-3
+            data_tmp2 = select(data_tmp2, -Qls)
+            data_tmp = data_tmp2
+            meta_tmp = read_tibble(file.path(computer_data_path,
+                                             dir, "meta.csv"))
+            
+        }
+        
         data_tmp = rename(data_tmp, !!paste0("Q_", type):=Q)
 
         if (nrow(data) == 0) {
             data = data_tmp
+            meta = meta_tmp
         } else {
             data = dplyr::full_join(data, data_tmp, by=c("Code", "Date"))
+            meta = bind_rows(meta, meta_tmp)
         }
     }
 
+    data = arrange(data, Code)
+    meta = arrange(meta, Code)
+    meta = distinct(meta, Code, .keep_all=TRUE)
     Code = levels(factor(data$Code))
     
     if (codes_to_use != "all") {
         Code = Code[apply(sapply(codes_to_use, grepl, x=Code), 1, any)]
         data = data[data$Code %in% Code,]
     }
-    data$Date = as.Date(data$Date)
         
-    meta = create_meta_HYDRO(computer_data_path,
-                             banque_hydro_dir,
-                             paste0(Code, obs_hydro_format),
-                             verbose=verbose)
     meta = get_lacune(dplyr::rename(data, Q=Q_obs), meta)
     
     write_tibble(data,

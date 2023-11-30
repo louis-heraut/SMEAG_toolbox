@@ -51,7 +51,7 @@ if ('extract_data' %in% to_do) {
             expand = TRUE
         }
 
-        cancel_lim = FALSE
+        # cancel_lim = FALSE
 
         res = CARD_extraction(data,
                               CARD_path=CARD_path,
@@ -61,7 +61,9 @@ if ('extract_data' %in% to_do) {
                               simplify=simplify,
                               suffix=extract$suffix,
                               expand_overwrite=expand,
-                              cancel_lim=cancel_lim,
+                              samplePeriod_overwrite=
+                                  extract$samplePeriod,
+                              cancel_lim=extract$cancel_lim,
                               rm_duplicates=TRUE,
                               dev=FALSE,
                               verbose=verbose)

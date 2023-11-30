@@ -141,11 +141,11 @@ mode =
 to_do =
     c(
         # 'delete_tmp',
-        # 'create_data',
+        # 'create_data'
         # 'extract_data',
         # 'save_data'
         # 'read_tmp'
-        'read_saving',
+        # 'read_saving',
         'plot_sheet'
         # 'plot_doc'
     )
@@ -168,7 +168,8 @@ extract_data =
 plot_sheet =
     c(
         # 'sommaire'
-        'fiche_stationnarity_station'
+        # 'fiche_stationnarity_station'
+        'carte_stationnarity'
     )
 
 ### 3.2. Document ____________________________________________________
@@ -181,41 +182,8 @@ plot_doc =
 ## 4. OTHER __________________________________________________________
 # Display information along process
 verbose =
-    # FALSE
-    TRUE
-
-
-
-
-
-# De plus : Message d'avis :
-# Using `size` aesthetic for lines was deprecated in
-# ggplot2 3.4.0.
-# ℹ Please use `linewidth` instead.
-# This warning is displayed once every 8 hours.
-# Call `lifecycle::last_lifecycle_warnings()` to see where
-# this warning was generated. 
-
-
-# Messages d'avis :
-# 1: Using `all_of()` outside of a selecting function was deprecated
-# in tidyselect 1.2.0.
-# ℹ See details at
-#   <https://tidyselect.r-lib.org/reference/faq-selection-context.html>
-# This warning is displayed once every 8 hours.
-# Call `lifecycle::last_lifecycle_warnings()` to see where this
-# warning was generated. 
-# 2: There was 1 warning in `dplyr::summarise()`.
-# ℹ In argument: `sp = list(...)`.
-# ℹ In group 1: `Code = "O0200020_naturalisee"`.
-# Caused by warning:
-# ! The `value` argument of `names<-` must be a character vector as
-#   of tibble 3.0.0.
-# This warning is displayed once every 8 hours.
-# Call `lifecycle::last_lifecycle_warnings()` to see where this
-# warning was generated. 
-
-
+    FALSE
+    # TRUE
 
 
 #  ___  _                  
@@ -224,13 +192,15 @@ verbose =
 # |___/ \__|\___|| .__//__/ __________________________________________
 ## 1. CREATE_DATA|_| _________________________________________________ 
 data_to_use =
-    c(obs='2023-06-16_hydrometrie_stations_PGE_2003-2020.csv',
-      nat='2023-06-16_Q_naturaliser_PGE.csv')
+    c(
+        obs='AEAG_selection',
+        nat='SMEAG_naturaliser'
+      )
 
 codes_to_use =
     c(
-        # "all"
-        'O0200020'
+        "all"
+        # 'O0200020'
         # '^O'
     )
 
@@ -298,15 +268,26 @@ SMEAG_hydrologie =
     list(name='SMEAG_hydrologie',
          type="serie",
          variables=c(
-             "QM",
+             # "QM",
              "QA",
              "QMNA",
              "VCN10",
-             # "VCN30",
-             "debutBE",
-             "tVCN10",
-             "dtBE"
+             "VCN30"
+             # "debutBE",
+             # "tVCN10",
+             # "dtBE"
          ),
+         samplePeriod=list(
+             # "01",
+             c("06-01", "10-31"),
+             c("06-01", "10-31"),
+             c("06-01", "10-31"),
+             c("06-01", "10-31")
+             # "01-01",
+             # "01-01",
+             # "01-01"
+         ),
+         cancel_lim=FALSE,
          suffix=c("obs", "nat"))
 
 # The risk of the Mann-Kendall trend detection test

@@ -29,6 +29,7 @@ icon_path = file.path(resources_path, icon_dir)
 
 if (!exists("Shapefiles")) {
     print("### Loading shapefiles")
+    Code = levels(factor(meta$Code))
     Shapefiles = load_shapefile(
         computer_shp_path, Code,
         france_shp_path,
@@ -116,7 +117,7 @@ for (i in 1:nChunk) {
     # }
 
     if (exists("trendEX_SMEAG_hydrologie")) {
-        trendEX_serie_chunk = trendEX_SMEAG_hydrologie
+        trendEX_chunk = trendEX_SMEAG_hydrologie
     }
     if (exists("dataEX_SMEAG_hydrologie")) {
         dataEX_serie_chunk = list()
@@ -140,48 +141,57 @@ for (i in 1:nChunk) {
             Pages = tibble(section='Sommaire', subsection=NA, n=1)
         }
 
-        if (sheet == 'carte_regime') {
-            print("### Plotting regime map")
-            sheet_regime_map(meta,
-                             icon_path=icon_path,
-                             logo_path=logo_path,
-                             is_foot=FALSE,
-                             figdir=today_figdir_leaf,
-                             Pages=Pages,
-                             Shapefiles=Shapefiles,
-                             verbose=verbose)
-        }
-            
-        
-        if (grepl('carte[_]critere', sheet)) {
-            print("### Plotting map")
-
-            one_colorbar = TRUE
-            metaEX_criteria_chunk =
-                metaEX_criteria_chunk[metaEX_criteria_chunk$var ==
-                                      chunkname,]
-
-            Pages = sheet_criteria_map(
-                dataEX_criteria_chunk,
-                metaEX_criteria_chunk,
+        if (sheet == 'carte_stationnarity') {
+            print("### Plotting stationnarity map")
+            sheet_stationnarity_map(
+                trendEX_chunk,
+                metaEX_serie_chunk,
                 meta,
-                prob=prob_of_quantile_for_palette,
-                ModelSelection=ModelSelection,
-                Colors=Colors_of_models,
-                subtitle=doc_subtitle,
-                one_colorbar=one_colorbar,
+                suffix_color_signif=c("obs"=IPCCgrey40,
+                                      "nat"=IPCCbrique),
+                suffix_color_not_signif=c("obs"=IPCCgrey80,
+                                          "nat"=IPCCgold),
                 icon_path=icon_path,
                 logo_path=logo_path,
                 is_foot=FALSE,
-                is_secteur=is_secteur,
-                is_warning=is_warning,
-                model_by_shape=model_by_shape,
-                remove_warning_lim=remove_warning_lim,
+                is_secteur=FALSE,
+                zoom=c(0.12, 0.06, 0.011, 0.011),
                 figdir=today_figdir_leaf,
                 Pages=Pages,
                 Shapefiles=Shapefiles,
                 verbose=verbose)
         }
+        
+        
+        # if (grepl('carte[_]critere', sheet)) {
+        #     print("### Plotting map")
+
+        #     one_colorbar = TRUE
+        #     metaEX_criteria_chunk =
+        #         metaEX_criteria_chunk[metaEX_criteria_chunk$var ==
+        #                               chunkname,]
+
+        #     Pages = sheet_criteria_map(
+        #         dataEX_criteria_chunk,
+        #         metaEX_criteria_chunk,
+        #         meta,
+        #         prob=prob_of_quantile_for_palette,
+        #         ModelSelection=ModelSelection,
+        #         Colors=Colors_of_models,
+        #         subtitle=doc_subtitle,
+        #         one_colorbar=one_colorbar,
+        #         icon_path=icon_path,
+        #         logo_path=logo_path,
+        #         is_foot=FALSE,
+        #         is_secteur=is_secteur,
+        #         is_warning=is_warning,
+        #         model_by_shape=model_by_shape,
+        #         remove_warning_lim=remove_warning_lim,
+        #         figdir=today_figdir_leaf,
+        #         Pages=Pages,
+        #         Shapefiles=Shapefiles,
+        #         verbose=verbose)
+        # }
 
         if (sheet == 'fiche_stationnarity_station') {
             print("### Plotting sheet stationnarity station")
