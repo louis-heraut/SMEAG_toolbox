@@ -141,11 +141,11 @@ mode =
 to_do =
     c(
         # 'delete_tmp',
-        # 'create_data'
+        # 'create_data',
         # 'extract_data',
         # 'save_data'
         # 'read_tmp'
-        # 'read_saving',
+        'read_saving',
         'plot_sheet'
         # 'plot_doc'
     )
@@ -182,8 +182,8 @@ plot_doc =
 ## 4. OTHER __________________________________________________________
 # Display information along process
 verbose =
-    FALSE
-    # TRUE
+    # FALSE
+    TRUE
 
 
 #  ___  _                  
@@ -194,8 +194,16 @@ verbose =
 data_to_use =
     c(
         obs='AEAG_selection',
-        nat='SMEAG_naturaliser'
-      )
+        nat='SMEAG_naturaliser',
+        inf='AEAG_influencer'
+    )
+
+suffix_names =
+    c(
+        obs="débits observés",
+        nat="débits naturalisés",
+        inf="débits influencés"
+    )
 
 codes_to_use =
     c(
@@ -288,7 +296,7 @@ SMEAG_hydrologie =
              # "01-01"
          ),
          cancel_lim=FALSE,
-         suffix=c("obs", "nat"))
+         suffix=c("obs", "nat", "inf"))
 
 # The risk of the Mann-Kendall trend detection test
 level = 0.1
@@ -312,7 +320,8 @@ saving_format =
 
 ## 4. READ_SAVING ____________________________________________________
 read_saving =
-    extract_data
+    # extract_data
+    gsub("[-]", "_", Sys.Date())
 
 var2search =
     c(
@@ -355,7 +364,7 @@ logo_to_show =
 # colorbar extremes. For example, if set to 0.01, quartile 1 and
 # quantile 99 will be used as the minimum and maximum values to assign
 # to minmimal maximum colors.
-exProb = 0.01
+prob_of_quantile_for_palette = 0.01
 
 # Graphical selection of period for a zoom
 axis_xlim =

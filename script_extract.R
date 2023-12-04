@@ -82,7 +82,7 @@ if ('extract_data' %in% to_do) {
                 take_not_signif_into_account=TRUE,
                 period_trend=period_trend,
                 period_change=period_change,
-                exProb=exProb,
+                exProb=prob_of_quantile_for_palette,
                 verbose=verbose)
 
             if (nrow(trendEX) == 0) {

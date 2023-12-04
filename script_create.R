@@ -85,7 +85,18 @@ if ('create_data' %in% to_do) {
         data = data[data$Code %in% Code,]
     }
         
-    meta = get_lacune(dplyr::rename(data, Q=Q_obs), meta)
+    # meta = get_lacune(dplyr::rename(data, Q=Q_inf), meta)
+
+    data = dplyr::mutate(dplyr::group_by(data, Code),
+                         nYear=as.numeric((max(Date) -
+                                           min(Date))/365.25))
+    data = dplyr::filter(data, nYear >= 30)
+    data = dplyr::select(data, -nYear)
+
+    Code_to_rm = meta$Code[meta$XL93_m >
+                           quantile(meta$XL93_m, 0.999)]
+    data = data[!(data$Code %in% Code_to_rm),]
+    meta = meta[!(meta$Code %in% Code_to_rm),]
     
     write_tibble(data,
                  filedir=tmppath,
