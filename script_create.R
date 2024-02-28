@@ -33,70 +33,79 @@ if ('create_data' %in% to_do) {
     
     for (i in 1:length(data_to_use)) {
         type = names(data_to_use)[i]
-        dir = data_to_use[i]
-        Paths = list.files(file.path(computer_data_path, dir),
-                           full.names=TRUE)
+        dirs = data_to_use[[i]]
+        for (dir in dirs) {
+            Paths = list.files(file.path(computer_data_path, dir),
+                               full.names=TRUE)
 
-        if (all(grepl(obs_hydro_format, basename(Paths), fixed=TRUE))) {
-            data_tmp = create_data_HYDRO(computer_data_path,
-                                         dir,
-                                         basename(Paths),
-                                         verbose=verbose)
-            meta_tmp = create_meta_HYDRO(computer_data_path,
-                                         dir,
-                                         basename(Paths),
-                                         verbose=verbose)
-        } else {
-            Paths = Paths[!grepl("meta", Paths)]
-            data_tmp2 = dplyr::tibble()
-            for (path in Paths) {
-                data_tmp2 = bind_rows(bind_cols(Code=gsub("[_].*", "",
-                                                         basename(path)),
-                                               read_tibble(path)),
-                                     data_tmp2)
+            if (all(grepl(obs_hydro_format, basename(Paths),
+                          fixed=TRUE))) {
+                data_tmp = create_data_HYDRO(computer_data_path,
+                                             dir,
+                                             basename(Paths),
+                                             variable_to_load="Qm3s",
+                                             verbose=verbose)
+
+                for (i in 1:nrow(flag)) {
+                    data$Q[data$code == flag$code[i] &
+                           data$date == flag$date[i]] = flag$Q[i]
+                }
+                
+                meta_tmp = create_meta_HYDRO(computer_data_path,
+                                             dir,
+                                             basename(Paths),
+                                             verbose=verbose)
+                meta_tmp$type = type
+                
+            } else {
+                Paths = Paths[!grepl("meta", Paths)]
+                data_tmp = dplyr::tibble()
+                for (path in Paths) {
+                    data_tmp = bind_rows(bind_cols(
+                        code=gsub("[_].*", "",
+                                  basename(path)),
+                        read_tibble(path)),
+                        data_tmp)
+                }
+                data_tmp$date = as.Date(data_tmp$date)
+                data_tmp = dplyr::rename(data_tmp, Q=Qm3s)
+                meta_tmp = read_tibble(file.path(computer_data_path,
+                                                 dir, "meta.csv"))
+                meta_tmp$type = type
             }
-            data_tmp2$Date = as.Date(data_tmp2$Date)
-            data_tmp2$Q = data_tmp2$Qls*1E-3
-            data_tmp2 = select(data_tmp2, -Qls)
-            data_tmp = data_tmp2
-            meta_tmp = read_tibble(file.path(computer_data_path,
-                                             dir, "meta.csv"))
-            
-        }
-        
-        data_tmp = rename(data_tmp, !!paste0("Q_", type):=Q)
 
-        if (nrow(data) == 0) {
-            data = data_tmp
-            meta = meta_tmp
-        } else {
-            data = dplyr::full_join(data, data_tmp, by=c("Code", "Date"))
-            meta = bind_rows(meta, meta_tmp)
+            data_tmp = rename(data_tmp, !!paste0("Q_", type):=Q)
+
+            if (nrow(data) == 0) {
+                data = data_tmp
+                meta = meta_tmp
+            } else {
+                if (!(paste0("Q_", type) %in% names(data))) {
+                    data = dplyr::full_join(data, data_tmp,
+                                            by=c("code", "date"))
+                } else {
+                    data = dplyr::bind_rows(data, data_tmp)
+                }
+                meta = bind_rows(meta, meta_tmp)
+            }
         }
     }
 
-    data = arrange(data, Code)
-    meta = arrange(meta, Code)
-    meta = distinct(meta, Code, .keep_all=TRUE)
-    Code = levels(factor(data$Code))
+    data = arrange(data, code)
+    meta = arrange(meta, code, type)
+    meta = distinct(meta, code, type, .keep_all=TRUE)
+    Code = levels(factor(data$code))
     
     if (codes_to_use != "all") {
-        Code = Code[apply(sapply(codes_to_use, grepl, x=Code), 1, any)]
+        pattern = paste0("(",
+                         paste0(codes_to_use, collapse=")|("),
+                         ")")
+        Code = Code[grepl(pattern, Code)]
         data = data[data$Code %in% Code,]
+        meta = meta[meta$Code %in% Code,]
     }
-        
+    
     # meta = get_lacune(dplyr::rename(data, Q=Q_inf), meta)
-
-    data = dplyr::mutate(dplyr::group_by(data, Code),
-                         nYear=as.numeric((max(Date) -
-                                           min(Date))/365.25))
-    data = dplyr::filter(data, nYear >= 30)
-    data = dplyr::select(data, -nYear)
-
-    Code_to_rm = meta$Code[meta$XL93_m >
-                           quantile(meta$XL93_m, 0.999)]
-    data = data[!(data$Code %in% Code_to_rm),]
-    meta = meta[!(meta$Code %in% Code_to_rm),]
     
     write_tibble(data,
                  filedir=tmppath,

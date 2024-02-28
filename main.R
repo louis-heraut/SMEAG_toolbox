@@ -140,13 +140,13 @@ mode =
 
 to_do =
     c(
-        # 'delete_tmp',
-        # 'create_data',
+        # 'delete_tmp'
+        'create_data'
         # 'extract_data',
         # 'save_data'
         # 'read_tmp'
-        'read_saving',
-        'plot_sheet'
+        # 'read_saving',
+        # 'plot_sheet'
         # 'plot_doc'
     )
 
@@ -192,16 +192,15 @@ verbose =
 # |___/ \__|\___|| .__//__/ __________________________________________
 ## 1. CREATE_DATA|_| _________________________________________________ 
 data_to_use =
-    c(
-        obs='AEAG_selection',
-        nat='SMEAG_naturaliser',
-        inf='AEAG_influencer'
+    list(
+        # obs=,
+        nat=c('AEAG_selection', 'SMEAG_naturel'),
+        inf='SMEAG_influencer'
     )
 
 suffix_names =
     c(
-        obs="débits observés",
-        nat="débits naturalisés",
+        nat="débits naturel",
         inf="débits influencés"
     )
 
@@ -218,7 +217,7 @@ codes_to_use =
 # - 'periodSub' tends to represent the period with the most accessible
 #    flow data
 periodAll =
-    c('1968-01-01', '2022-12-31')
+    c('1968-01-01', '2020-12-31')
     # c(NA, '2020-12-31')
 periodSub =
     NULL
@@ -236,26 +235,26 @@ periodCur =
     # c('2000-01-01', '2020-12-31')
 
 
-# # Local corrections of the data
-# flag = data.frame(
-#     Code=c('O3141010',
-#            'O7635010',
-#            'O7635010',
-#            'O7635010',
-#            'O7635010'
-#            ),
-#     Date=c('1974-07-04',
-#            '1948-09-06',
-#            '1949-02-08',
-#            '1950-07-20',
-#            '1953-07-22'
-#            ),
-#     newQ=c(9.5,
-#                4,
-#                3,
-#                1,
-#                3) # /!\ Unit
-# )
+# Local corrections of the data
+flag = dplyr::tibble(
+    code=c('O3141010',
+           'O7635010',
+           'O7635010',
+           'O7635010',
+           'O7635010'
+           ),
+    date=c('1974-07-04',
+           '1948-09-06',
+           '1949-02-08',
+           '1950-07-20',
+           '1953-07-22'
+           ),
+    Q=c(9.5,
+        4,
+        3,
+        1,
+        3) # /!\ Unit
+)
 
 
 ## 2. EXTRACT_DATA ___________________________________________________
@@ -276,27 +275,26 @@ SMEAG_hydrologie =
     list(name='SMEAG_hydrologie',
          type="serie",
          variables=c(
-             # "QM",
              "QA",
              "QMNA",
              "VCN10",
-             "VCN30"
-             # "debutBE",
-             # "tVCN10",
-             # "dtBE"
+             "VCN30",
+             "startLF",
+             "centerLF"
          ),
          samplePeriod=list(
-             # "01",
+             c("06-01", "10-31"),
+             c("06-01", "10-31"),
              c("06-01", "10-31"),
              c("06-01", "10-31"),
              c("06-01", "10-31"),
              c("06-01", "10-31")
-             # "01-01",
-             # "01-01",
-             # "01-01"
          ),
          cancel_lim=FALSE,
-         suffix=c("obs", "nat", "inf"))
+         suffix=c("nat", "inf"))
+
+# nat 56 AEAG + 26 SMEAG
+# inf 26 SMEAG -> BH
 
 # The risk of the Mann-Kendall trend detection test
 level = 0.1
