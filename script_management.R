@@ -93,7 +93,7 @@ if (!read_tmp & !delete_tmp) {
                                              extract$name,
                                              ".fst"))
                 }
-                if ("trendEX" %in% var2save) {
+                if ("trendEX" %in% var2save & extract$do_trend) {
                     trendEX = read_tibble(filedir=tmppath,
                                           filename=paste0(
                                               "trendEX_",
@@ -141,7 +141,7 @@ if (!read_tmp & !delete_tmp) {
                                                  ".", format))
                 }
 
-                if ("trendEX" %in% var2save) {
+                if ("trendEX" %in% var2save & extract$do_trend) {
                     write_tibble(trendEX,
                                  filedir=today_resdir_format_tmp,
                                  filename=paste0("trendEX_",
@@ -236,21 +236,21 @@ if (!read_tmp & !delete_tmp) {
 
 
         if (exists("data") & codes_to_use != "all") {
-            Code = levels(factor(data$Code))
+            Code = levels(factor(data$code))
             if (codes_to_use != "all") {
                 Code = Code[apply(as.matrix(sapply(codes_to_use,
                                                    grepl, x=Code)),
                                   1, any)]
-                data = data[data$Code %in% Code,]
+                data = data[data$code %in% Code,]
             }
         }
         if (exists("meta") & codes_to_use != "all") {
-            Code = levels(factor(meta$Code))
+            Code = levels(factor(meta$code))
             if (codes_to_use != "all") {
                 Code = Code[apply(as.matrix(sapply(codes_to_use,
                                                    grepl, x=Code)),
                                   1, any)]
-                meta = meta[meta$Code %in% Code,]
+                meta = meta[meta$code %in% Code,]
             }
         }
 

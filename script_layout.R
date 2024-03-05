@@ -24,12 +24,18 @@
 # realise plottings of data analyses.
 
 
-logo_path = load_logo(resources_path, logo_dir, logo_to_show)
+add_path = function (x) {
+    x = c(x, file.path(resources_path, logo_dir, x["file"]))
+    names(x)[length(x)] = "path"
+    return (x)
+}
+logo_info = lapply(logo_info, add_path)
+
 icon_path = file.path(resources_path, icon_dir)
 
 if (!exists("Shapefiles")) {
     print("### Loading shapefiles")
-    Code = levels(factor(meta$Code))
+    Code = levels(factor(meta$code))
     Shapefiles = load_shapefile(
         computer_shp_path, Code,
         france_shp_path,
@@ -61,10 +67,12 @@ if ('plot_doc' %in% to_do) {
 }
 
 
-if (doc_chunk == "") {    
-    chunkCode = list(codes_to_use)#list(CodeALL10)
-    plotCode = list(codes_to_use)
-    
+if (doc_chunk == "") {
+    if (codes_to_use != "all") {
+        Code = Code[grepl(pattern_codes_to_use, Code)]
+    }
+    chunkCode = list(Code)
+    plotCode = list(Code)
 }
 
 
@@ -99,37 +107,36 @@ for (i in 1:nChunk) {
         today_figdir_leaf = today_figdir
     }
 
-    data_chunk = data[data$Code %in% chunk,]
-    meta_chunk = meta[meta$Code %in% chunk,]
-
-    # if (exists("dataEX_criteria")) {
-    #     if (nrow(dataEX_criteria) > 0) {
-    #         dataEX_criteria_chunk =
-    #             dataEX_criteria[dataEX_criteria$Code %in% chunk,]
-    #         if (nrow(dataEX_criteria_chunk) == 0 &
-    #             nrow(dataEX_criteria) != 0) {
-    #             next
-    #         }
-    #     }
-    # }
-    # if (exists("metaEX_criteria")) {
-    #     metaEX_criteria_chunk = metaEX_criteria
-    # }
+    data_chunk = data[data$code %in% chunk,]
+    meta_chunk = meta[meta$code %in% chunk,]
 
     if (exists("trendEX_SMEAG_hydrologie")) {
-        trendEX_chunk = trendEX_SMEAG_hydrologie
+        trendEX_chunk =
+            trendEX_SMEAG_hydrologie[
+                trendEX_SMEAG_hydrologie$code %in% chunk,]
     }
-    if (exists("dataEX_SMEAG_hydrologie")) {
+    if (exists("dataEX_SMEAG_hydrologie") &
+        exists("dataEX_SMEAG_hydrologie_regime")) {
         dataEX_serie_chunk = list()
-            for (j in 1:length(dataEX_SMEAG_hydrologie)) {
-                dataEX_serie_chunk = append(
-                    dataEX_serie_chunk,
-                    list(dataEX_SMEAG_hydrologie[[j]][
-                        dataEX_SMEAG_hydrologie[[j]]$Code %in%
-                        chunk,]))
-            }
-        names(dataEX_serie_chunk) = names(dataEX_SMEAG_hydrologie)
+        for (j in 1:length(dataEX_SMEAG_hydrologie)) {
+            dataEX_serie_chunk = append(
+                dataEX_serie_chunk,
+                list(dataEX_SMEAG_hydrologie[[j]][
+                    dataEX_SMEAG_hydrologie[[j]]$code %in%
+                    chunk,]))
+        }
+        for (j in 1:length(dataEX_SMEAG_hydrologie_regime)) {
+            dataEX_serie_chunk = append(
+                dataEX_serie_chunk,
+                list(dataEX_SMEAG_hydrologie_regime[[j]][
+                    dataEX_SMEAG_hydrologie_regime[[j]]$code %in%
+                    chunk,]))
+        }
+        names(dataEX_serie_chunk) =
+            c(names(dataEX_SMEAG_hydrologie),
+              names(dataEX_SMEAG_hydrologie_regime))
     }
+    
     if (exists("metaEX_SMEAG_hydrologie")) {
         metaEX_serie_chunk = metaEX_SMEAG_hydrologie
     }
@@ -191,16 +198,50 @@ for (i in 1:nChunk) {
         #         verbose=verbose)
         # }
 
+
         if (sheet == 'fiche_stationnarity_station') {
             print("### Plotting sheet stationnarity station")
+
+            ok = meta_chunk$is_long
+            ok[is.na(ok)] = FALSE
+            code_long = meta_chunk$code[ok]
+            code_long = code_long[!duplicated(code_long)]
+
+            trendEX_chunk_type =
+                trendEX_chunk[grepl("[_]nat",
+                                    trendEX_chunk$variable_en),]
+            trendEX_chunk_type$variable_en =
+                gsub("[_]nat", "", trendEX_chunk_type$variable_en)
+            
+            data_type = dplyr::select(data, -"Q_inf", Q="Q_nat")
+            meta_type = dplyr::filter(meta, type == "nat")
+            meta_type = dplyr::select(meta_type,
+                                      -"tLac_pct_inf",
+                                      tLac_pct="tLac_pct_nat",
+                                      -"meanLac_inf",
+                                      meanLac="meanLac_nat")
+            
+            dataEX_serie_chunk_type = dataEX_serie_chunk
+            for (j in 1:length(dataEX_serie_chunk_type)) {
+                var = names(dataEX_serie_chunk_type)[j]
+                dataEX_serie_chunk_type[[j]] =
+                    dplyr::select(dataEX_serie_chunk_type[[j]],
+                                  -dplyr::all_of(paste0(var,
+                                                        "_inf")),
+                                  !!var:=
+                                      dplyr::all_of(paste0(var,
+                                                           "_nat")))
+            }
+
             Pages = sheet_stationnarity_station(
-                data,
-                meta,
-                trendEX_serie_chunk,
-                dataEX_serie_chunk,
-                metaEX_serie_chunk,
+                data=data_type,
+                meta=meta_type,
+                trendEX=trendEX_chunk_type,
+                dataEX_serie=dataEX_serie_chunk_type,
+                metaEX_serie=metaEX_serie_chunk,
                 period_trend_show=period_trend,
-                logo_path=logo_path,
+                code_selection=code_long,
+                logo_info=logo_info,
                 Shapefiles=Shapefiles,
                 figdir=today_figdir_leaf,
                 Pages=Pages,

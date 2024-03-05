@@ -57,12 +57,12 @@ if ('extract_data' %in% to_do) {
                               CARD_path=CARD_path,
                               CARD_dir=extract$name,
                               CARD_tmp=tmppath,
-                              period=periodAll,
+                              period=extract$period,
                               simplify=simplify,
                               suffix=extract$suffix,
                               expand_overwrite=expand,
-                              samplePeriod_overwrite=
-                                  extract$samplePeriod,
+                              sampling_period_overwrite=
+                                  extract$sampling_period,
                               cancel_lim=extract$cancel_lim,
                               rm_duplicates=TRUE,
                               dev=FALSE,
@@ -71,25 +71,35 @@ if ('extract_data' %in% to_do) {
         dataEX = res$dataEX
         metaEX = res$metaEX
 
-        trendEX = dplyr::tibble()
-        
-        for (i in 1:length(dataEX)) {
-            trendEX_var = process_trend(
-                dataEX[[i]],
-                metaEX=metaEX,
-                MK_level=level,
-                suffix=extract$suffix,
-                take_not_signif_into_account=TRUE,
-                period_trend=period_trend,
-                period_change=period_change,
-                exProb=prob_of_quantile_for_palette,
-                verbose=verbose)
+        if (!is.null(names(extract$variables))) {
+            ok = nchar(names(extract$variables)) == 0
+            names(extract$variables)[ok] = extract$variables[ok]
+            metaEX$variable =
+                names(extract$variables)[match(metaEX$variable_en,
+                                               extract$variables)]
+        }
 
-            if (nrow(trendEX) == 0) {
-                trendEX = trendEX_var
-            } else {
-                trendEX = dplyr::bind_rows(trendEX,
-                                           trendEX_var)
+        if (extract$do_trend) {
+            trendEX = dplyr::tibble()
+            
+            for (i in 1:length(dataEX)) {
+                trendEX_var = process_trend(
+                    dataEX[[i]],
+                    metaEX=metaEX,
+                    MK_level=level,
+                    suffix=extract$suffix,
+                    take_not_signif_into_account=TRUE,
+                    period_trend=period_trend,
+                    period_change=period_change,
+                    exProb=prob_of_quantile_for_palette,
+                    verbose=verbose)
+
+                if (nrow(trendEX) == 0) {
+                    trendEX = trendEX_var
+                } else {
+                    trendEX = dplyr::bind_rows(trendEX,
+                                               trendEX_var)
+                }
             }
         }
 
@@ -104,18 +114,21 @@ if ('extract_data' %in% to_do) {
                                      extract$name,
                                      ".fst"))
 
-        if (!is.null(period_trend)) {
-            trendEX$period = sapply(trendEX$period, paste0, collapse=" ")
+        if (extract$do_trend) {
+            if (!is.null(period_trend)) {
+                trendEX$period = sapply(trendEX$period,
+                                        paste0, collapse=" ")
+            }
+            if (!is.null(period_change)) {
+                trendEX$period_change = sapply(trendEX$period_change,
+                                               paste0, collapse=" ")
+            }
+            
+            write_tibble(trendEX,
+                         filedir=tmppath,
+                         filename=paste0("trendEX_",
+                                         extract$name,
+                                         ".fst"))
         }
-        if (!is.null(period_change)) {
-            trendEX$period_change = sapply(trendEX$period_change,
-                                           paste0, collapse=" ")
-        }
-        
-        write_tibble(trendEX,
-                     filedir=tmppath,
-                     filename=paste0("trendEX_",
-                                     extract$name,
-                                     ".fst"))
     }
 }

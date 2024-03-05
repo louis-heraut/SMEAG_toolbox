@@ -25,7 +25,7 @@
 
 
 if ('create_data' %in% to_do) {
-    
+
     data = dplyr::tibble()
     data_tmp = dplyr::tibble()
     meta = dplyr::tibble()
@@ -37,6 +37,14 @@ if ('create_data' %in% to_do) {
         for (dir in dirs) {
             Paths = list.files(file.path(computer_data_path, dir),
                                full.names=TRUE)
+
+            Code = gsub("[_].*", "", basename(Paths))
+            if (codes_to_use != "all") {
+                Paths = Paths[grepl(pattern_codes_to_use, Code)]
+            }
+            if (length(Paths) == 0) {
+                next
+            }
 
             if (all(grepl(obs_hydro_format, basename(Paths),
                           fixed=TRUE))) {
@@ -54,8 +62,8 @@ if ('create_data' %in% to_do) {
                 meta_tmp = create_meta_HYDRO(computer_data_path,
                                              dir,
                                              basename(Paths),
+                                             hydrological_region_level=2,
                                              verbose=verbose)
-                meta_tmp$type = type
                 
             } else {
                 Paths = Paths[!grepl("meta", Paths)]
@@ -71,9 +79,10 @@ if ('create_data' %in% to_do) {
                 data_tmp = dplyr::rename(data_tmp, Q=Qm3s)
                 meta_tmp = read_tibble(file.path(computer_data_path,
                                                  dir, "meta.csv"))
-                meta_tmp$type = type
             }
 
+            meta_tmp$type = type
+            
             data_tmp = rename(data_tmp, !!paste0("Q_", type):=Q)
 
             if (nrow(data) == 0) {
@@ -95,17 +104,17 @@ if ('create_data' %in% to_do) {
     meta = arrange(meta, code, type)
     meta = distinct(meta, code, type, .keep_all=TRUE)
     Code = levels(factor(data$code))
+
+    meta$is_long[is.na(meta$is_long)] = FALSE
     
-    if (codes_to_use != "all") {
-        pattern = paste0("(",
-                         paste0(codes_to_use, collapse=")|("),
-                         ")")
-        Code = Code[grepl(pattern, Code)]
-        data = data[data$Code %in% Code,]
-        meta = meta[meta$Code %in% Code,]
-    }
-    
-    # meta = get_lacune(dplyr::rename(data, Q=Q_inf), meta)
+    meta = get_lacune(dplyr::rename(data, Q=Q_inf), meta)
+    meta = dplyr::rename(meta,
+                         meanLac_inf=meanLac,
+                         tLac_pct_inf=tLac_pct)
+    meta = get_lacune(dplyr::rename(data, Q=Q_nat), meta)
+    meta = dplyr::rename(meta,
+                         meanLac_nat=meanLac,
+                         tLac_pct_nat=tLac_pct)
     
     write_tibble(data,
                  filedir=tmppath,

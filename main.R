@@ -141,19 +141,20 @@ mode =
 to_do =
     c(
         # 'delete_tmp'
-        'create_data'
+        # 'create_data',
         # 'extract_data',
         # 'save_data'
         # 'read_tmp'
-        # 'read_saving',
-        # 'plot_sheet'
+        'read_saving',
+        'plot_sheet'
         # 'plot_doc'
     )
 
 extract_data =
     c(
         # 'WIP'
-        'SMEAG_hydrologie'
+        'SMEAG_hydrologie',
+        'SMEAG_hydrologie_regime'
     )
 
 
@@ -168,8 +169,8 @@ extract_data =
 plot_sheet =
     c(
         # 'sommaire'
-        # 'fiche_stationnarity_station'
-        'carte_stationnarity'
+        'fiche_stationnarity_station'
+        # 'carte_stationnarity'
     )
 
 ### 3.2. Document ____________________________________________________
@@ -206,8 +207,8 @@ suffix_names =
 
 codes_to_use =
     c(
-        "all"
-        # 'O0200020'
+        # "all"
+        'O0200020'
         # '^O'
     )
 
@@ -234,6 +235,8 @@ periodCur =
     NULL
     # c('2000-01-01', '2020-12-31')
 
+periodRegime =
+    c('2003-01-01', '2020-12-31')
 
 # Local corrections of the data
 flag = dplyr::tibble(
@@ -275,22 +278,33 @@ SMEAG_hydrologie =
     list(name='SMEAG_hydrologie',
          type="serie",
          variables=c(
-             "QA",
+             "Q_JJASON"="QSA_JJASON",
              "QMNA",
              "VCN10",
              "VCN30",
-             "startLF",
-             "centerLF"
+             "t0_étiage"="startLF",
+             "tVCN10"="centerLF"
          ),
-         samplePeriod=list(
-             c("06-01", "10-31"),
+         sampling_period=list(
+             NULL,
              c("06-01", "10-31"),
              c("06-01", "10-31"),
              c("06-01", "10-31"),
              c("06-01", "10-31"),
              c("06-01", "10-31")
          ),
+         period=periodAll,
          cancel_lim=FALSE,
+         do_trend=TRUE,
+         suffix=c("nat", "inf"))
+
+SMEAG_hydrologie_regime = 
+    list(name='SMEAG_hydrologie_regime',
+         type="serie",
+         variables=c("QM"),
+         period=periodRegime,
+         cancel_lim=TRUE,
+         do_trend=FALSE,
          suffix=c("nat", "inf"))
 
 # nat 56 AEAG + 26 SMEAG
@@ -318,8 +332,8 @@ saving_format =
 
 ## 4. READ_SAVING ____________________________________________________
 read_saving =
-    # extract_data
     gsub("[-]", "_", Sys.Date())
+    # "2024_02_29"
 
 var2search =
     c(
@@ -350,13 +364,14 @@ toleranceRel =
     # 9000 # mini map
 
 # Which logo do you want to show in the footnote
-logo_to_show =
-    c(
-        # 'PR'='logo_Prefet_bassin.png',
-        'FR'='Republique_Francaise_RVB.png',
-        'INRAE'='Logo-INRAE_Transparent.png'
-        # 'AEAG'='agence-de-leau-adour-garonne_logo.png'
-    )
+logo_info = list(
+    # "PR"=c(file='logo_Prefet_bassin.png', y=0.5, height=1, width=1),
+    "FR"=c(file='Republique_Francaise_RVB.png', y=0.5, height=1, width=0.4),
+    "INRAE"=c(file='Logo-INRAE_Transparent.png', y=0.72, height=0.32, width=0.4),
+    # "AEAG"=c(file='agence-de-leau-adour-garonne_logo.png', y=0.5, height=0.8, width=1),
+    "SMEAG"=c(file='smeag.png', y=0.5, height=0.8, width=0.65)
+    # "EX2"=c(file='LogoExplore2.png', y=0.4, height=1, width=1)
+)
 
 # Probability used to define the min and max quantile needed for
 # colorbar extremes. For example, if set to 0.01, quartile 1 and
@@ -467,6 +482,8 @@ if (any(grepl("plot", to_do))) {
     library(ggrepel)
     library(latex2exp)
     library(sf)
+
+    assign_color()
 }
 
 # already ::
@@ -480,6 +497,8 @@ if (any(grepl("plot", to_do))) {
 # potentialy useless
 # library(trend)
 
+pattern_codes_to_use =
+    paste0("(", paste0(codes_to_use, collapse=")|("), ")")
 
 tmppath = file.path(computer_work_path, tmpdir)
 
