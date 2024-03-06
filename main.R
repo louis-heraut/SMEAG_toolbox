@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Louis Héraut (louis.heraut@inrae.fr)*1,
+# Copyright 2021-2024 Louis Héraut (louis.heraut@inrae.fr)*1,
 #                     Éric Sauquet (eric.sauquet@inrae.fr)*1
 #
 # *1   INRAE, France
@@ -141,12 +141,12 @@ mode =
 to_do =
     c(
         # 'delete_tmp'
-        # 'create_data',
-        # 'extract_data',
-        # 'save_data'
+        'create_data',
+        'extract_data',
+        'save_data'
         # 'read_tmp'
         # 'read_saving',
-        'plot_sheet'
+        # 'plot_sheet'
         # 'plot_doc'
     )
 
@@ -171,7 +171,8 @@ plot_sheet =
         # 'sommaire'
         # 'fiche_stationnarity_station_nat',
         # 'fiche_stationnarity_station_inf'
-        'carte_stationnarity'
+        'carte_stationnarity_Sen'
+        # 'carte_stationnarity_MK'
     )
 
 ### 3.2. Document ____________________________________________________
@@ -184,8 +185,8 @@ plot_doc =
 ## 4. OTHER __________________________________________________________
 # Display information along process
 verbose =
-    FALSE
-    # TRUE
+    # FALSE
+    TRUE
 
 
 #  ___  _                  
@@ -195,9 +196,8 @@ verbose =
 ## 1. CREATE_DATA|_| _________________________________________________ 
 data_to_use =
     list(
-        # obs=,
-        nat=c('AEAG_selection', 'SMEAG_naturel'),
-        inf='SMEAG_influencer'
+        nat=c('SMEAG_AEAG_selection', 'SMEAG_naturels'),
+        inf='SMEAG_influences'
     )
 
 suffix_names =
@@ -208,7 +208,7 @@ suffix_names =
 
 codes_to_use =
     c(
-        # "all"
+        "all"
         # 'O0200020'
         # '^O'
     )

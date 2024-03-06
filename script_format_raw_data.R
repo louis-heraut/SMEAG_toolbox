@@ -1,6 +1,27 @@
+# Copyright 2021-2024 Louis Héraut (louis.heraut@inrae.fr)*1,
+#                     Éric Sauquet (eric.sauquet@inrae.fr)*1
+#
+# *1   INRAE, France
+#
+# This file is part of AEAG_toolbox R toolbox.
+#
+# AEAG_toolbox R toolbox is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# AEAG_toolbox R toolbox is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with AEAG_toolbox R toolbox.
+# If not, see <https://www.gnu.org/licenses/>.
 
 
 dir = "../raw_data"
+res = "formated"
 
 is_not_external_NA = function(X) {
     is_nNA = !is.na(X)
@@ -12,7 +33,8 @@ is_not_external_NA = function(X) {
 }
 
 
-
+## SMEAG naturels ____________________________________________________
+print("SMEAG naturels")
 dataNat_old = ASHE::read_tibble(file.path(dir, "Qnat_old.csv"))
 dataNat_old$date = as.Date(dataNat_old$date, "%d/%m/%Y")
 dataNat_new = ASHE::read_tibble(file.path(dir, "Qnat_new.csv"))
@@ -34,7 +56,7 @@ dataNat_short = dplyr::select(dataNat_new,
                                            code_new_not_old)))
 dataNat = dplyr::full_join(dataNat_long, dataNat_short)
 
-output_dir = file.path(dir, "SMEAG_naturel")
+output_dir = file.path(dir, res, "SMEAG_naturels")
 unlink(output_dir)
 dir.create(output_dir)
 for (code in code_new) {
@@ -44,20 +66,19 @@ for (code in code_new) {
     dataNat_code = dplyr::filter(dataNat_code,
                                  is_not_external_NA(Qm3s))
     ASHE::write_tibble(dataNat_code, filedir=output_dir,
-                       filename=paste0(code, "_naturaliser.txt"))
+                       filename=paste0(code, "_SMEAG.txt"))
 }
 
 
-
-
-
+## SMEAG influences __________________________________________________
+print("SMEAG influences")
 dataInf_new = ASHE::read_tibble(file.path(dir, "Qinf_new.csv"))
 dataInf_new$date = as.Date(dataInf_new$date)
 
 code_new = names(dataInf_new)[names(dataInf_new) != "date"]
 date_cut = min(dataInf_new$date)
 
-output_dir = file.path(dir, "SMEAG_influencer")
+output_dir = file.path(dir, res, "SMEAG_influences")
 unlink(output_dir)
 dir.create(output_dir)
 
@@ -102,5 +123,47 @@ for (code in code_new) {
     dataInf_code = dplyr::filter(dataInf_code,
                                  is_not_external_NA(Qm3s))
     ASHE::write_tibble(dataInf_code, filedir=output_dir,
-                       filename=paste0(code, "_influencer.txt"))
+                       filename=paste0(code, "_SMEAG.txt"))
+}
+
+
+
+
+## HYDRO influences __________________________________________________
+print("HYDRO influences")
+Paths = list.files(file.path(dir, "HYDRO0_inf"), full.names=TRUE)
+output_dir = file.path(dir, res, "HYDRO_influences")
+unlink(output_dir)
+dir.create(output_dir)
+for (path in Paths) {
+    code = gsub("[_].*", "", basename(path))
+    print(code)
+    dataHYDRO_code = ASHE::read_tibble(path)
+    dataHYDRO_code = dplyr::mutate(dataHYDRO_code,
+                                   date=as.Date(t),
+                                   Qm3s=v*1E-3,
+                                   .keep="used")
+    dataHYDRO_code = dplyr::select(dataHYDRO_code, -v, -t)
+    ASHE::write_tibble(dataHYDRO_code, filedir=output_dir,
+                       filename=paste0(code, "_HYDRO0.txt"))
+}
+
+
+## HYDRO naturels ____________________________________________________
+print("HYDRO naturels")
+Paths = list.files(file.path(dir, "HYDRO0_nat"), full.names=TRUE)
+output_dir = file.path(dir, res, "HYDRO_naturels")
+unlink(output_dir)
+dir.create(output_dir)
+for (path in Paths) {
+    code = gsub("[_].*", "", basename(path))
+    print(code)
+    dataHYDRO_code = ASHE::read_tibble(path)
+    dataHYDRO_code = dplyr::mutate(dataHYDRO_code,
+                                   date=as.Date(t),
+                                   Qm3s=v*1E-3,
+                                   .keep="used")
+    dataHYDRO_code = dplyr::select(dataHYDRO_code, -v, -t)
+    ASHE::write_tibble(dataHYDRO_code, filedir=output_dir,
+                       filename=paste0(code, "_HYDRO0.txt"))
 }

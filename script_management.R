@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Louis Héraut (louis.heraut@inrae.fr)*1,
+# Copyright 2021-2024 Louis Héraut (louis.heraut@inrae.fr)*1,
 #                     Éric Sauquet (eric.sauquet@inrae.fr)*1
 #
 # *1   INRAE, France

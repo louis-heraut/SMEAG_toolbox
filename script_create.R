@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Louis Héraut (louis.heraut@inrae.fr)*1,
+# Copyright 2021-2024 Louis Héraut (louis.heraut@inrae.fr)*1,
 #                     Éric Sauquet (eric.sauquet@inrae.fr)*1
 #
 # *1   INRAE, France
@@ -35,6 +35,7 @@ if ('create_data' %in% to_do) {
         type = names(data_to_use)[i]
         dirs = data_to_use[[i]]
         for (dir in dirs) {
+            print(paste0("from ", dir))
             Paths = list.files(file.path(computer_data_path, dir),
                                full.names=TRUE)
 
@@ -82,6 +83,7 @@ if ('create_data' %in% to_do) {
             }
 
             meta_tmp$type = type
+            meta_tmp$origin = dir
             
             data_tmp = rename(data_tmp, !!paste0("Q_", type):=Q)
 

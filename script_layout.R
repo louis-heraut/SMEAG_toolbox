@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Louis Héraut (louis.heraut@inrae.fr)*1,
+# Copyright 2021-2024 Louis Héraut (louis.heraut@inrae.fr)*1,
 #                     Éric Sauquet (eric.sauquet@inrae.fr)*1
 #
 # *1   INRAE, France
@@ -151,7 +151,30 @@ for (i in 1:nChunk) {
             Pages = tibble(section='Sommaire', subsection=NA, n=1)
         }
 
-        if (sheet == 'carte_stationnarity') {
+        if (sheet == 'carte_stationnarity_Sen') {
+            print("### Plotting stationnarity map")
+            sheet_stationnarity_map(
+                trendEX_chunk,
+                metaEX_serie_chunk,
+                meta,
+                prob=prob_of_quantile_for_palette,
+                suffix_names=suffix_names,
+                icon_path=icon_path,
+                logo_path=logo_path,
+                is_foot=FALSE,
+                is_secteur=FALSE,
+                zoom=NULL,
+                # zoom=c(0.08, 0.04, 0.005, 0.005),
+                x_echelle_pct=10,
+                y_echelle_pct=1,
+                echelle=c(0, 20, 50, 100),
+                figdir=today_figdir_leaf,
+                Pages=Pages,
+                Shapefiles=Shapefiles,
+                verbose=verbose)
+        }
+
+        if (sheet == 'carte_stationnarity_MK') {
             print("### Plotting stationnarity map")
             sheet_stationnarity_map(
                 trendEX_chunk,
@@ -174,36 +197,6 @@ for (i in 1:nChunk) {
                 verbose=verbose)
         }
         
-        
-        # if (grepl('carte[_]critere', sheet)) {
-        #     print("### Plotting map")
-
-        #     one_colorbar = TRUE
-        #     metaEX_criteria_chunk =
-        #         metaEX_criteria_chunk[metaEX_criteria_chunk$var ==
-        #                               chunkname,]
-
-        #     Pages = sheet_criteria_map(
-        #         dataEX_criteria_chunk,
-        #         metaEX_criteria_chunk,
-        #         meta,
-        #         prob=prob_of_quantile_for_palette,
-        #         ModelSelection=ModelSelection,
-        #         Colors=Colors_of_models,
-        #         subtitle=doc_subtitle,
-        #         one_colorbar=one_colorbar,
-        #         icon_path=icon_path,
-        #         logo_path=logo_path,
-        #         is_foot=FALSE,
-        #         is_secteur=is_secteur,
-        #         is_warning=is_warning,
-        #         model_by_shape=model_by_shape,
-        #         remove_warning_lim=remove_warning_lim,
-        #         figdir=today_figdir_leaf,
-        #         Pages=Pages,
-        #         Shapefiles=Shapefiles,
-        #         verbose=verbose)
-        # }
 
 
         if (sheet == 'fiche_stationnarity_station_nat') {

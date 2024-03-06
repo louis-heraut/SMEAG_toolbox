@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Louis Héraut (louis.heraut@inrae.fr)*1,
+# Copyright 2021-2024 Louis Héraut (louis.heraut@inrae.fr)*1,
 #                     Éric Sauquet (eric.sauquet@inrae.fr)*1
 #
 # *1   INRAE, France
@@ -18,10 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with AEAG_toolbox R toolbox.
 # If not, see <https://www.gnu.org/licenses/>.
-
-
-# Script that manages the call to the right process in order to
-# realise analyses.
 
 
 if ('extract_data' %in% to_do) {
