@@ -145,7 +145,7 @@ to_do =
         # 'extract_data',
         # 'save_data'
         # 'read_tmp'
-        'read_saving',
+        # 'read_saving',
         'plot_sheet'
         # 'plot_doc'
     )
@@ -169,22 +169,23 @@ extract_data =
 plot_sheet =
     c(
         # 'sommaire'
-        'fiche_stationnarity_station'
-        # 'carte_stationnarity'
+        # 'fiche_stationnarity_station_nat',
+        # 'fiche_stationnarity_station_inf'
+        'carte_stationnarity'
     )
 
 ### 3.2. Document ____________________________________________________
 plot_doc =
     c(
-        #
+        'analyse_stationnarity'
     )
 
 
 ## 4. OTHER __________________________________________________________
 # Display information along process
 verbose =
-    # FALSE
-    TRUE
+    FALSE
+    # TRUE
 
 
 #  ___  _                  
@@ -208,7 +209,7 @@ suffix_names =
 codes_to_use =
     c(
         # "all"
-        'O0200020'
+        # 'O0200020'
         # '^O'
     )
 
@@ -332,8 +333,8 @@ saving_format =
 
 ## 4. READ_SAVING ____________________________________________________
 read_saving =
-    gsub("[-]", "_", Sys.Date())
-    # "2024_02_29"
+    # gsub("[-]", "_", Sys.Date())
+    "2024_03_05"
 
 var2search =
     c(
@@ -385,7 +386,18 @@ axis_xlim =
 # c('1982-01-01', '1983-01-01')
 
 
+## 6. PLOT_DOC _______________________________________________________
 default_doc_title = ""
+doc_analyse_stationnarity =
+    list(
+        title='Analyse de stationnarité',
+        subtitle="Fiche station",
+        chunk='',
+        sheet=c('sommaire',
+                'fiche_stationnarity_station_nat',
+                'fiche_stationnarity_station_inf',
+                'carte_stationnarity')
+    )
 
 
 
@@ -543,6 +555,10 @@ names(extract_data_tmp) = extract_data
 extract_data = extract_data_tmp
 
 tmppath = file.path(computer_work_path, tmpdir)
+
+if ('plot_doc' %in% to_do) {
+    plot_doc = get(paste0("doc_", plot_doc[1]))
+}
 
 if ("delete_tmp" %in% to_do) {
     delete_tmp = TRUE

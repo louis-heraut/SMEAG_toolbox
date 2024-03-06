@@ -30,12 +30,16 @@ add_path = function (x) {
     return (x)
 }
 logo_info = lapply(logo_info, add_path)
-
 icon_path = file.path(resources_path, icon_dir)
+Code = levels(factor(meta$code))
+
+ok = meta$is_long
+ok[is.na(ok)] = FALSE
+Code_long = meta$code[ok]
+Code_long = Code_long[!duplicated(Code_long)]
 
 if (!exists("Shapefiles")) {
     print("### Loading shapefiles")
-    Code = levels(factor(meta$code))
     Shapefiles = load_shapefile(
         computer_shp_path, Code,
         france_shp_path,
@@ -68,13 +72,12 @@ if ('plot_doc' %in% to_do) {
 
 
 if (doc_chunk == "") {
-    if (codes_to_use != "all") {
+    if (!all(codes_to_use == "all")) {
         Code = Code[grepl(pattern_codes_to_use, Code)]
     }
     chunkCode = list(Code)
     plotCode = list(Code)
 }
-
 
 nChunk = length(chunkCode)
 
@@ -160,7 +163,11 @@ for (i in 1:nChunk) {
                 logo_path=logo_path,
                 is_foot=FALSE,
                 is_secteur=FALSE,
-                zoom=c(0.08, 0.04, 0.005, 0.005),
+                zoom=NULL,
+                # zoom=c(0.08, 0.04, 0.005, 0.005),
+                x_echelle_pct=10,
+                y_echelle_pct=1,
+                echelle=c(0, 20, 50, 100),
                 figdir=today_figdir_leaf,
                 Pages=Pages,
                 Shapefiles=Shapefiles,
@@ -199,27 +206,23 @@ for (i in 1:nChunk) {
         # }
 
 
-        if (sheet == 'fiche_stationnarity_station') {
-            print("### Plotting sheet stationnarity station")
+        if (sheet == 'fiche_stationnarity_station_nat') {
+            print("### Plotting sheet stationnarity station nat")
 
-            ok = meta_chunk$is_long
-            ok[is.na(ok)] = FALSE
-            code_long = meta_chunk$code[ok]
-            code_long = code_long[!duplicated(code_long)]
-
+            # Nat
             trendEX_chunk_type =
                 trendEX_chunk[grepl("[_]nat",
                                     trendEX_chunk$variable_en),]
             trendEX_chunk_type$variable_en =
                 gsub("[_]nat", "", trendEX_chunk_type$variable_en)
             
-            data_type = dplyr::select(data, -"Q_inf", Q="Q_nat")
-            meta_type = dplyr::filter(meta, type == "nat")
-            meta_type = dplyr::select(meta_type,
-                                      -"tLac_pct_inf",
-                                      tLac_pct="tLac_pct_nat",
-                                      -"meanLac_inf",
-                                      meanLac="meanLac_nat")
+            data_chunk_type = dplyr::select(data_chunk, -"Q_inf", Q="Q_nat")
+            meta_chunk_type = dplyr::filter(meta_chunk, type == "nat")
+            meta_chunk_type = dplyr::select(meta_chunk_type,
+                                            -"tLac_pct_inf",
+                                            tLac_pct="tLac_pct_nat",
+                                            -"meanLac_inf",
+                                            meanLac="meanLac_nat")
             
             dataEX_serie_chunk_type = dataEX_serie_chunk
             for (j in 1:length(dataEX_serie_chunk_type)) {
@@ -234,16 +237,76 @@ for (i in 1:nChunk) {
             }
 
             Pages = sheet_stationnarity_station(
-                data=data_type,
-                meta=meta_type,
+                data=data_chunk_type,
+                meta=meta_chunk_type,
                 trendEX=trendEX_chunk_type,
                 dataEX_serie=dataEX_serie_chunk_type,
                 metaEX_serie=metaEX_serie_chunk,
-                period_trend_show=period_trend,
-                code_selection=code_long,
+                axis_xlim=periodAll,
+                code_selection=Code_long,
+                subtitle="Débits reconstitués",
                 logo_info=logo_info,
                 Shapefiles=Shapefiles,
+                zoom=NULL,
+                map_limits=c(250000, 790000, 6100000, 6600000),
+                x_echelle_pct=10,
+                y_echelle_pct=5,
+                echelle=c(0, 100),
                 figdir=today_figdir_leaf,
+                suffix="reconstitués",
+                Pages=Pages,
+                verbose=verbose)
+        }
+        
+
+        if (sheet == 'fiche_stationnarity_station_inf') {
+            print("### Plotting sheet stationnarity station inf")
+
+            # Inf
+            trendEX_chunk_type =
+                trendEX_chunk[grepl("[_]inf",
+                                    trendEX_chunk$variable_en),]
+            trendEX_chunk_type$variable_en =
+                gsub("[_]inf", "", trendEX_chunk_type$variable_en)
+            
+            data_chunk_type = dplyr::select(data_chunk, -"Q_nat", Q="Q_inf")
+            meta_chunk_type = dplyr::filter(meta_chunk, type == "inf")
+            meta_chunk_type = dplyr::select(meta_chunk_type,
+                                            -"tLac_pct_inf",
+                                            tLac_pct="tLac_pct_inf",
+                                            -"meanLac_inf",
+                                            meanLac="meanLac_inf")
+            
+            dataEX_serie_chunk_type = dataEX_serie_chunk
+            for (j in 1:length(dataEX_serie_chunk_type)) {
+                var = names(dataEX_serie_chunk_type)[j]
+                dataEX_serie_chunk_type[[j]] =
+                    dplyr::select(dataEX_serie_chunk_type[[j]],
+                                  -dplyr::all_of(paste0(var,
+                                                        "_nat")),
+                                  !!var:=
+                                      dplyr::all_of(paste0(var,
+                                                           "_inf")))
+            }
+
+            Pages = sheet_stationnarity_station(
+                data=data_chunk_type,
+                meta=meta_chunk_type,
+                trendEX=trendEX_chunk_type,
+                dataEX_serie=dataEX_serie_chunk_type,
+                metaEX_serie=metaEX_serie_chunk,
+                axis_xlim=periodAll,
+                # code_selection=Code_long,
+                subtitle="Débits influencés",
+                logo_info=logo_info,
+                Shapefiles=Shapefiles,
+                zoom=NULL,
+                map_limits=c(250000, 790000, 6100000, 6600000),
+                x_echelle_pct=10,
+                y_echelle_pct=5,
+                echelle=c(0, 100),
+                figdir=today_figdir_leaf,
+                suffix="influencés",
                 Pages=Pages,
                 verbose=verbose)
         }
@@ -263,7 +326,7 @@ for (i in 1:nChunk) {
         sheet_summary(Pages,
                       title=doc_title,
                       subtitle=subtitle,
-                      logo_path=logo_path,
+                      logo_info=logo_info,
                       figdir=today_figdir_leaf)
     }
 
