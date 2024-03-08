@@ -152,7 +152,7 @@ for (i in 1:nChunk) {
         }
 
         if (sheet == 'carte_stationnarity_Sen') {
-            print("### Plotting stationnarity map")
+            print("### Plotting stationnarity map Sen")
             sheet_stationnarity_map(
                 trendEX_chunk,
                 metaEX_serie_chunk,
@@ -175,7 +175,7 @@ for (i in 1:nChunk) {
         }
 
         if (sheet == 'carte_stationnarity_MK') {
-            print("### Plotting stationnarity map")
+            print("### Plotting stationnarity map MK")
             sheet_stationnarity_map(
                 trendEX_chunk,
                 metaEX_serie_chunk,
@@ -249,7 +249,9 @@ for (i in 1:nChunk) {
                 y_echelle_pct=5,
                 echelle=c(0, 100),
                 figdir=today_figdir_leaf,
-                suffix="reconstitués",
+                suffix="Débits reconstitués",
+                foot_resume=FALSE,
+                color_to_switch=color_to_switch,
                 Pages=Pages,
                 verbose=verbose)
         }
@@ -295,7 +297,7 @@ for (i in 1:nChunk) {
                 dataEX_serie=dataEX_serie_chunk_type,
                 metaEX_serie=metaEX_serie_chunk,
                 axis_xlim=periodAll,
-                # code_selection=Code_long,
+                code_selection=Code_long,
                 subtitle="Débits influencés",
                 logo_info=logo_info,
                 Shapefiles=Shapefiles,
@@ -305,7 +307,9 @@ for (i in 1:nChunk) {
                 y_echelle_pct=5,
                 echelle=c(0, 100),
                 figdir=today_figdir_leaf,
-                suffix="influencés",
+                suffix="Débits observés",
+                foot_resume=FALSE,
+                color_to_switch=color_to_switch,
                 Pages=Pages,
                 verbose=verbose)
         }
@@ -322,10 +326,12 @@ for (i in 1:nChunk) {
         } else {
             subtitle = ""
         }
+
         sheet_summary(Pages,
                       title=doc_title,
                       subtitle=subtitle,
                       logo_info=logo_info,
+                      page_margin=c(t=1, r=1, b=0.5, l=1),
                       figdir=today_figdir_leaf)
     }
 

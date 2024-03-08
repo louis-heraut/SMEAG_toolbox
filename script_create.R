@@ -101,18 +101,18 @@ if ('create_data' %in% to_do) {
         }
     }
 
-    data = arrange(data, code)
+    data = arrange(data, code, date)
     meta = arrange(meta, code, type)
     meta = distinct(meta, code, type, .keep_all=TRUE)
     Code = levels(factor(data$code))
 
     meta$is_long[is.na(meta$is_long)] = FALSE
     
-    meta = get_lacune(dplyr::rename(data, Q=Q_inf), meta)
+    meta = get_lacune(dplyr::select(data, code, date, Q=Q_inf), meta)
     meta = dplyr::rename(meta,
                          meanLac_inf=meanLac,
                          tLac_pct_inf=tLac_pct)
-    meta = get_lacune(dplyr::rename(data, Q=Q_nat), meta)
+    meta = get_lacune(dplyr::select(data, code, date, Q=Q_nat), meta)
     meta = dplyr::rename(meta,
                          meanLac_nat=meanLac,
                          tLac_pct_nat=tLac_pct)

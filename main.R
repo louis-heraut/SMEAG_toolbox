@@ -140,7 +140,7 @@ mode =
 
 to_do =
     c(
-        # 'delete_tmp'
+        # 'delete_tmp',
         # 'create_data',
         # 'extract_data',
         # 'save_data'
@@ -169,7 +169,7 @@ extract_data =
 plot_sheet =
     c(
         # 'sommaire'
-        # 'fiche_stationnarity_station_nat',
+        # 'fiche_stationnarity_station_nat'
         # 'fiche_stationnarity_station_inf'
         'carte_stationnarity_Sen'
         # 'carte_stationnarity_MK'
@@ -385,6 +385,13 @@ axis_xlim =
     NULL
 # c('1982-01-01', '1983-01-01')
 
+color_to_switch = c(
+    "#EFD695"="#F6E8C3",
+    "#A1DCD3"="#C7EAE5",
+    "#DBBECE"="#EFE2E9",
+    "#E7BDB8"="#F5E4E2"
+)
+
 
 ## 6. PLOT_DOC _______________________________________________________
 default_doc_title = ""
@@ -496,7 +503,7 @@ if (any(grepl("plot", to_do))) {
     library(latex2exp)
     library(sf)
 
-    assign_color()
+    assign_colors_and_fonts()
 }
 
 # already ::

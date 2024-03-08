@@ -64,7 +64,8 @@ for (code in code_new) {
         dataNat_code =
             dplyr::bind_rows(dplyr::filter(dataNat_old_code,
                                            date < date_cut),
-                             dataNat_new_code)
+                             dplyr::filter(dataNat_new_code,
+                                           date_cut <= date))
         
     } else {
         dataNat_code = dplyr::select(dataNat_new,
