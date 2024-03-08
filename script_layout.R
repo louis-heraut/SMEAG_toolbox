@@ -209,13 +209,16 @@ for (i in 1:nChunk) {
             trendEX_chunk_type$variable_en =
                 gsub("[_]nat", "", trendEX_chunk_type$variable_en)
             
-            data_chunk_type = dplyr::select(data_chunk, -"Q_inf", Q="Q_nat")
-            meta_chunk_type = dplyr::filter(meta_chunk, type == "nat")
-            meta_chunk_type = dplyr::select(meta_chunk_type,
-                                            -"tLac_pct_inf",
-                                            tLac_pct="tLac_pct_nat",
-                                            -"meanLac_inf",
-                                            meanLac="meanLac_nat")
+            data_chunk_type =
+                dplyr::select(data_chunk, -"Q_inf", Q="Q_nat")
+            meta_chunk_type =
+                dplyr::filter(meta_chunk, type == "nat")
+            meta_chunk_type =
+                dplyr::select(meta_chunk_type,
+                              -"tLac_pct_inf",
+                              tLac_pct="tLac_pct_nat",
+                              -"meanLac_inf",
+                              meanLac="meanLac_nat")
             
             dataEX_serie_chunk_type = dataEX_serie_chunk
             for (j in 1:length(dataEX_serie_chunk_type)) {
@@ -262,13 +265,16 @@ for (i in 1:nChunk) {
             trendEX_chunk_type$variable_en =
                 gsub("[_]inf", "", trendEX_chunk_type$variable_en)
             
-            data_chunk_type = dplyr::select(data_chunk, -"Q_nat", Q="Q_inf")
-            meta_chunk_type = dplyr::filter(meta_chunk, type == "inf")
-            meta_chunk_type = dplyr::select(meta_chunk_type,
-                                            -"tLac_pct_inf",
-                                            tLac_pct="tLac_pct_inf",
-                                            -"meanLac_inf",
-                                            meanLac="meanLac_inf")
+            data_chunk_type =
+                dplyr::select(data_chunk, -"Q_nat", Q="Q_inf")
+            meta_chunk_type =
+                dplyr::filter(meta_chunk, type == "inf")
+            meta_chunk_type =
+                dplyr::select(meta_chunk_type,
+                              -"tLac_pct_inf",
+                              tLac_pct="tLac_pct_inf",
+                              -"meanLac_inf",
+                              meanLac="meanLac_inf")
             
             dataEX_serie_chunk_type = dataEX_serie_chunk
             for (j in 1:length(dataEX_serie_chunk_type)) {

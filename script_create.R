@@ -81,11 +81,10 @@ if ('create_data' %in% to_do) {
                 meta_tmp = read_tibble(file.path(computer_data_path,
                                                  dir, "meta.csv"))
             }
-
-            meta_tmp$type = type
-            meta_tmp$origin = dir
             
             data_tmp = rename(data_tmp, !!paste0("Q_", type):=Q)
+            meta_tmp$type = type
+            meta_tmp$origin = dir
 
             if (nrow(data) == 0) {
                 data = data_tmp

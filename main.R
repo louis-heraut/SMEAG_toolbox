@@ -141,13 +141,13 @@ mode =
 to_do =
     c(
         # 'delete_tmp'
-        'create_data',
-        'extract_data',
-        'save_data'
+        # 'create_data',
+        # 'extract_data',
+        # 'save_data'
         # 'read_tmp'
-        # 'read_saving',
+        'read_saving',
         # 'plot_sheet'
-        # 'plot_doc'
+        'plot_doc'
     )
 
 extract_data =
@@ -333,8 +333,8 @@ saving_format =
 
 ## 4. READ_SAVING ____________________________________________________
 read_saving =
-    # gsub("[-]", "_", Sys.Date())
-    "2024_03_05"
+    gsub("[-]", "_", Sys.Date())
+    # "2024_03_05"
 
 var2search =
     c(
@@ -395,8 +395,9 @@ doc_analyse_stationnarity =
         chunk='',
         sheet=c('sommaire',
                 'fiche_stationnarity_station_nat',
-                'fiche_stationnarity_station_inf',
-                'carte_stationnarity')
+                'fiche_stationnarity_station_inf'
+                # 'carte_stationnarity'
+                )
     )
 
 
