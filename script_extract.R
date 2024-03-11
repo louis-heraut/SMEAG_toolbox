@@ -27,7 +27,7 @@ if ('extract_data' %in% to_do) {
     
     meta = read_tibble(filedir=tmppath,
                        filename=paste0("meta.fst"))
-    
+
     for (i in 1:length(extract_data)) {
         
         extract = extract_data[[i]]
@@ -80,7 +80,7 @@ if ('extract_data' %in% to_do) {
             
             for (i in 1:length(dataEX)) {
                 trendEX_var = process_trend(
-                    dataEX[[i]],
+                    dataEX=dataEX[[i]],
                     metaEX=metaEX,
                     MK_level=level,
                     suffix=extract$suffix,

@@ -334,7 +334,7 @@ saving_format =
 ## 4. READ_SAVING ____________________________________________________
 read_saving =
     gsub("[-]", "_", Sys.Date())
-    # "2024_03_05"
+    # "2024_03_08"
 
 var2search =
     c(
@@ -378,7 +378,7 @@ logo_info = list(
 # colorbar extremes. For example, if set to 0.01, quartile 1 and
 # quantile 99 will be used as the minimum and maximum values to assign
 # to minmimal maximum colors.
-prob_of_quantile_for_palette = 0.01
+prob_of_quantile_for_palette = 0.1
 
 # Graphical selection of period for a zoom
 axis_xlim =
@@ -401,10 +401,10 @@ doc_analyse_stationnarity =
         subtitle="Fiche station",
         chunk='',
         sheet=c('sommaire',
+                'carte_stationnarity_MK',
+                'carte_stationnarity_Sen',
                 'fiche_stationnarity_station_nat',
-                'fiche_stationnarity_station_inf'
-                # 'carte_stationnarity'
-                )
+                'fiche_stationnarity_station_inf')
     )
 
 

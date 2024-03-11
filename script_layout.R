@@ -24,6 +24,7 @@
 # realise plottings of data analyses.
 
 
+
 add_path = function (x) {
     x = c(x, file.path(resources_path, logo_dir, x["file"]))
     names(x)[length(x)] = "path"
@@ -37,6 +38,12 @@ ok = meta$is_long
 ok[is.na(ok)] = FALSE
 Code_long = meta$code[ok]
 Code_long = Code_long[!duplicated(Code_long)]
+
+Code_AEAG = meta$code[grepl("AEAG", meta$origin)]
+Code_MK = sort(c(Code_long, Code_AEAG))
+Code_Sen = meta$code[!grepl("AEAG", meta$origin)]
+Code_Sen = Code_Sen[!duplicated(Code_Sen)]
+
 
 if (!exists("Shapefiles")) {
     print("### Loading shapefiles")
@@ -113,36 +120,31 @@ for (i in 1:nChunk) {
     data_chunk = data[data$code %in% chunk,]
     meta_chunk = meta[meta$code %in% chunk,]
 
-    if (exists("trendEX_SMEAG_hydrologie")) {
-        trendEX_chunk =
-            trendEX_SMEAG_hydrologie[
-                trendEX_SMEAG_hydrologie$code %in% chunk,]
-    }
-    if (exists("dataEX_SMEAG_hydrologie") &
-        exists("dataEX_SMEAG_hydrologie_regime")) {
-        dataEX_serie_chunk = list()
-        for (j in 1:length(dataEX_SMEAG_hydrologie)) {
-            dataEX_serie_chunk = append(
-                dataEX_serie_chunk,
-                list(dataEX_SMEAG_hydrologie[[j]][
-                    dataEX_SMEAG_hydrologie[[j]]$code %in%
-                    chunk,]))
-        }
-        for (j in 1:length(dataEX_SMEAG_hydrologie_regime)) {
-            dataEX_serie_chunk = append(
-                dataEX_serie_chunk,
-                list(dataEX_SMEAG_hydrologie_regime[[j]][
-                    dataEX_SMEAG_hydrologie_regime[[j]]$code %in%
-                    chunk,]))
-        }
-        names(dataEX_serie_chunk) =
-            c(names(dataEX_SMEAG_hydrologie),
-              names(dataEX_SMEAG_hydrologie_regime))
-    }
+    trendEX_chunk =
+        trendEX_SMEAG_hydrologie[
+            trendEX_SMEAG_hydrologie$code %in% chunk,]
     
-    if (exists("metaEX_SMEAG_hydrologie")) {
-        metaEX_serie_chunk = metaEX_SMEAG_hydrologie
+    dataEX_serie_chunk = list()
+    for (j in 1:length(dataEX_SMEAG_hydrologie)) {
+        dataEX_serie_chunk = append(
+            dataEX_serie_chunk,
+            list(dataEX_SMEAG_hydrologie[[j]][
+                dataEX_SMEAG_hydrologie[[j]]$code %in%
+                chunk,]))
     }
+    for (j in 1:length(dataEX_SMEAG_hydrologie_regime)) {
+        dataEX_serie_chunk = append(
+            dataEX_serie_chunk,
+            list(dataEX_SMEAG_hydrologie_regime[[j]][
+                dataEX_SMEAG_hydrologie_regime[[j]]$code %in%
+                chunk,]))
+    }
+    names(dataEX_serie_chunk) =
+        c(names(dataEX_SMEAG_hydrologie),
+          names(dataEX_SMEAG_hydrologie_regime))
+
+    metaEX_serie_chunk = metaEX_SMEAG_hydrologie
+
     
     for (sheet in sheet_list) {
         
@@ -153,22 +155,40 @@ for (i in 1:nChunk) {
 
         if (sheet == 'carte_stationnarity_Sen') {
             print("### Plotting stationnarity map Sen")
+
+            # Nat
+            trendEX_chunk_type =
+                trendEX_chunk[grepl("[_]nat",
+                                    trendEX_chunk$variable_en),]
+            trendEX_chunk_type$variable_en =
+                gsub("[_]nat", "", trendEX_chunk_type$variable_en)
+            meta_chunk_type =
+                dplyr::filter(meta_chunk, type == "nat")
+            meta_chunk_type =
+                dplyr::select(meta_chunk_type,
+                              -"tLac_pct_inf",
+                              tLac_pct="tLac_pct_nat",
+                              -"meanLac_inf",
+                              meanLac="meanLac_nat")
+
             sheet_stationnarity_map(
-                trendEX_chunk,
+                trendEX_chunk_type,
                 metaEX_serie_chunk,
-                meta,
-                prob=prob_of_quantile_for_palette,
-                suffix_names=suffix_names,
+                meta_chunk_type,
+                code_selection=Code_Sen,
+                show_MK=FALSE,
                 icon_path=icon_path,
                 logo_path=logo_path,
-                is_foot=FALSE,
+                is_foot=TRUE,
+                foot_resume=FALSE,
                 is_secteur=FALSE,
                 zoom=NULL,
-                # zoom=c(0.08, 0.04, 0.005, 0.005),
+                map_limits=c(280000, 790000, 6100000, 6600000),
                 x_echelle_pct=10,
-                y_echelle_pct=1,
+                y_echelle_pct=7,
                 echelle=c(0, 20, 50, 100),
                 figdir=today_figdir_leaf,
+                suffix="Sans test de Mann-Kendall",
                 Pages=Pages,
                 Shapefiles=Shapefiles,
                 verbose=verbose)
@@ -176,22 +196,42 @@ for (i in 1:nChunk) {
 
         if (sheet == 'carte_stationnarity_MK') {
             print("### Plotting stationnarity map MK")
+
+            # Nat
+            trendEX_chunk_type =
+                trendEX_chunk[grepl("[_]nat",
+                                    trendEX_chunk$variable_en),]
+            trendEX_chunk_type$variable_en =
+                gsub("[_]nat", "", trendEX_chunk_type$variable_en)
+            meta_chunk_type =
+                dplyr::filter(meta_chunk, type == "nat")
+            meta_chunk_type =
+                dplyr::select(meta_chunk_type,
+                              -"tLac_pct_inf",
+                              tLac_pct="tLac_pct_nat",
+                              -"meanLac_inf",
+                              meanLac="meanLac_nat")
+            
+
             sheet_stationnarity_map(
-                trendEX_chunk,
+                trendEX_chunk_type,
                 metaEX_serie_chunk,
-                meta,
-                prob=prob_of_quantile_for_palette,
-                suffix_names=suffix_names,
+                meta_chunk_type,
+                code_selection=Code_MK,
+                # suffix_names=suffix_names,
+                show_MK=TRUE,
                 icon_path=icon_path,
                 logo_path=logo_path,
-                is_foot=FALSE,
+                is_foot=TRUE,
+                foot_resume=FALSE,
                 is_secteur=FALSE,
                 zoom=NULL,
-                # zoom=c(0.08, 0.04, 0.005, 0.005),
+                map_limits=c(280000, 790000, 6100000, 6600000),
                 x_echelle_pct=10,
-                y_echelle_pct=1,
+                y_echelle_pct=7,
                 echelle=c(0, 20, 50, 100),
                 figdir=today_figdir_leaf,
+                suffix="Avec test de Mann-Kendall",
                 Pages=Pages,
                 Shapefiles=Shapefiles,
                 verbose=verbose)
