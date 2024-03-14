@@ -231,31 +231,44 @@ if (!read_tmp & !delete_tmp) {
                 print(paste0(Filenames[i], " reads in ", Paths[i]))
                 assign(Filenames[i],
                        read_tibble(filepath=Paths[i]))
+
+                if (!tibble::is_tibble(get(Filenames[i]))) {
+                    if ("code" %in% names(get(Filenames[i])[[1]])) {
+                        apply_filter = function (X) {
+                            dplyr::filter(X, grepl(pattern_codes_to_use,
+                                                   code))
+                        }
+                        assign(Filenames[i],
+                               lapply(get(Filenames[i]), apply_filter))
+                    }
+                } else {
+                    if ("code" %in% names(get(Filenames[i]))) {
+                        assign(Filenames[i],
+                               dplyr::filter(get(Filenames[i]),
+                                             grepl(pattern_codes_to_use, code)))
+                    }
+                }
             }
         }
 
-
-        if (exists("data") & codes_to_use != "all") {
-            Code = levels(factor(data$code))
-            if (codes_to_use != "all") {
-                Code = Code[apply(as.matrix(sapply(codes_to_use,
-                                                   grepl, x=Code)),
-                                  1, any)]
-                data = data[data$code %in% Code,]
-            }
-        }
-        if (exists("meta") & codes_to_use != "all") {
-            Code = levels(factor(meta$code))
-            if (codes_to_use != "all") {
-                Code = Code[apply(as.matrix(sapply(codes_to_use,
-                                                   grepl, x=Code)),
-                                  1, any)]
-                meta = meta[meta$code %in% Code,]
-            }
-        }
-
-
-        
+        # if (exists("data") & codes_to_use != "all") {
+        #     Code = levels(factor(data$code))
+        #     if (codes_to_use != "all") {
+        #         Code = Code[apply(as.matrix(sapply(codes_to_use,
+        #                                            grepl, x=Code)),
+        #                           1, any)]
+        #         data = data[data$code %in% Code,]
+        #     }
+        # }
+        # if (exists("meta") & codes_to_use != "all") {
+        #     Code = levels(factor(meta$code))
+        #     if (codes_to_use != "all") {
+        #         Code = Code[apply(as.matrix(sapply(codes_to_use,
+        #                                            grepl, x=Code)),
+        #                           1, any)]
+        #         meta = meta[meta$code %in% Code,]
+        #     }
+        # }
     }
 
     

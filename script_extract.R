@@ -28,8 +28,17 @@ if ('extract_data' %in% to_do) {
     meta = read_tibble(filedir=tmppath,
                        filename=paste0("meta.fst"))
 
+    Code = levels(factor(meta$code))
+    ok = meta$is_long
+    ok[is.na(ok)] = FALSE
+    Code_long = meta$code[ok]
+    Code_long = Code_long[!duplicated(Code_long)]
+    Code_AEAG = meta$code[grepl("AEAG", meta$origin)]
+    Code_MK = sort(c(Code_long, Code_AEAG))
+    Code_Sen = meta$code[!grepl("AEAG", meta$origin)]
+    Code_Sen = Code_Sen[!duplicated(Code_Sen)]
+
     for (i in 1:length(extract_data)) {
-        
         extract = extract_data[[i]]
 
         CARD_management(CARD=CARD_path,
@@ -37,7 +46,6 @@ if ('extract_data' %in% to_do) {
                         layout=c(extract$name, "[",
                                  extract$variables, "]"),
                         overwrite=TRUE)
-
 
         if (extract$type == "criteria") {
             simplify = TRUE
@@ -47,9 +55,15 @@ if ('extract_data' %in% to_do) {
             expand = TRUE
         }
 
-        # cancel_lim = FALSE
+        if ("code_selection" %in% names(extract)) {
+            data_tmp =
+                dplyr::filter(data,
+                              code %in% get(extract$code_selection))
+        } else {
+            data_tmp = data
+        }
 
-        res = CARD_extraction(data,
+        res = CARD_extraction(data_tmp,
                               CARD_path=CARD_path,
                               CARD_dir=extract$name,
                               CARD_tmp=tmppath,
@@ -84,10 +98,12 @@ if ('extract_data' %in% to_do) {
                     metaEX=metaEX,
                     MK_level=level,
                     suffix=extract$suffix,
-                    take_not_signif_into_account=TRUE,
-                    period_trend=period_trend,
-                    period_change=period_change,
-                    exProb=prob_of_quantile_for_palette,
+                    period_trend=extract$period,
+                    # period_change=period_change,
+                    extreme_take_not_signif_into_account=TRUE,
+                    extreme_take_only_id=NULL,
+                    extreme_by_suffix=FALSE,
+                    extreme_prob=prob_of_quantile_for_palette,
                     verbose=verbose)
 
                 if (nrow(trendEX) == 0) {
@@ -99,6 +115,8 @@ if ('extract_data' %in% to_do) {
             }
         }
 
+        
+        
         write_tibble(dataEX,
                      filedir=tmppath,
                      filename=paste0("dataEX_",
@@ -111,14 +129,9 @@ if ('extract_data' %in% to_do) {
                                      ".fst"))
 
         if (extract$do_trend) {
-            if (!is.null(period_trend)) {
-                trendEX$period = sapply(trendEX$period,
-                                        paste0, collapse=" ")
-            }
-            if (!is.null(period_change)) {
-                trendEX$period_change = sapply(trendEX$period_change,
-                                               paste0, collapse=" ")
-            }
+            trendEX$period_trend =
+                sapply(trendEX$period_trend,
+                       paste0, collapse=" ")
             
             write_tibble(trendEX,
                          filedir=tmppath,

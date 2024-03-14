@@ -153,7 +153,8 @@ to_do =
 extract_data =
     c(
         # 'WIP'
-        'SMEAG_hydrologie',
+        'SMEAG_hydrologie_MK',
+        'SMEAG_hydrologie_Sen',
         'SMEAG_hydrologie_regime'
     )
 
@@ -170,8 +171,8 @@ plot_sheet =
     c(
         # 'sommaire'
         # 'fiche_stationnarity_station_nat'
-        # 'fiche_stationnarity_station_inf'
-        'carte_stationnarity_Sen'
+        'fiche_stationnarity_station_inf'
+        # 'carte_stationnarity_Sen'
         # 'carte_stationnarity_MK'
     )
 
@@ -194,6 +195,10 @@ verbose =
 # \__ \|  _|/ -_)| '_ \(_-<
 # |___/ \__|\___|| .__//__/ __________________________________________
 ## 1. CREATE_DATA|_| _________________________________________________ 
+period_MK = c('1968-01-01', '2022-12-31')
+period_Sen = c('2003-01-01', '2022-12-31')
+period_regime = c('2003-01-01', '2020-12-31')
+
 data_to_use =
     list(
         nat=c('SMEAG_AEAG_selection', 'SMEAG_naturels'),
@@ -213,31 +218,6 @@ codes_to_use =
         # '^O'
     )
 
-# Periods of time to perform the trend analyses. More precisely :
-# - 'periodAll' tends to represent the maximal accessible period of
-#    flow data hence the start in 1800
-# - 'periodSub' tends to represent the period with the most accessible
-#    flow data
-periodAll =
-    c('1968-01-01', '2020-12-31')
-    # c(NA, '2020-12-31')
-periodSub =
-    NULL
-    # c('1968-01-01', '2020-12-31')
-
-# Periods of time to average. More precisely :
-# - 'periodRef' tends to represent the reference period of the climate
-# - 'periodCur' tends to represent the current period
-#    flow data
-periodRef =
-    NULL
-    # c('1968-01-01', '1988-12-31')
-periodCur =
-    NULL
-    # c('2000-01-01', '2020-12-31')
-
-periodRegime =
-    c('2003-01-01', '2020-12-31')
 
 # Local corrections of the data
 flag = dplyr::tibble(
@@ -275,8 +255,8 @@ flag = dplyr::tibble(
 #   also be named 'Resume' in order to not include variables in an
 #   topic group.
 
-SMEAG_hydrologie = 
-    list(name='SMEAG_hydrologie',
+SMEAG_hydrologie_MK = 
+    list(name='SMEAG_hydrologie_MK',
          type="serie",
          variables=c(
              "Q_JJASON"="QSA_JJASON",
@@ -284,7 +264,8 @@ SMEAG_hydrologie =
              "VCN10",
              "VCN30",
              "t0_étiage"="startLF",
-             "tVCN10"="centerLF"
+             "tVCN10"="centerLF",
+             "dt_étiage"="dtLF"
          ),
          sampling_period=list(
              NULL,
@@ -292,9 +273,38 @@ SMEAG_hydrologie =
              c("06-01", "10-31"),
              c("06-01", "10-31"),
              c("06-01", "10-31"),
+             c("06-01", "10-31"),
              c("06-01", "10-31")
          ),
-         period=periodAll,
+         period=period_MK,
+         code_selection="Code_MK",
+         cancel_lim=FALSE,
+         do_trend=TRUE,
+         suffix=c("nat", "inf"))
+
+SMEAG_hydrologie_Sen = 
+    list(name='SMEAG_hydrologie_Sen',
+         type="serie",
+         variables=c(
+             "Q_JJASON"="QSA_JJASON",
+             "QMNA",
+             "VCN10",
+             "VCN30",
+             "t0_étiage"="startLF",
+             "tVCN10"="centerLF",
+             "dt_étiage"="dtLF"
+         ),
+         sampling_period=list(
+             NULL,
+             c("06-01", "10-31"),
+             c("06-01", "10-31"),
+             c("06-01", "10-31"),
+             c("06-01", "10-31"),
+             c("06-01", "10-31"),
+             c("06-01", "10-31")
+         ),
+         period=period_Sen,
+         code_selection="Code_Sen",
          cancel_lim=FALSE,
          do_trend=TRUE,
          suffix=c("nat", "inf"))
@@ -303,7 +313,7 @@ SMEAG_hydrologie_regime =
     list(name='SMEAG_hydrologie_regime',
          type="serie",
          variables=c("QM"),
-         period=periodRegime,
+         period=period_regime,
          cancel_lim=TRUE,
          do_trend=FALSE,
          suffix=c("nat", "inf"))
@@ -517,43 +527,18 @@ if (any(grepl("plot", to_do))) {
 # potentialy useless
 # library(trend)
 
-pattern_codes_to_use =
-    paste0("(", paste0(codes_to_use, collapse=")|("), ")")
+if (codes_to_use == "all") {
+    pattern_codes_to_use = ".*"
+} else {
+    pattern_codes_to_use =
+        paste0("(", paste0(codes_to_use, collapse=")|("), ")")
+}
 
 tmppath = file.path(computer_work_path, tmpdir)
 
 if ('delete_tmp' %in% to_do) {
     unlink(tmppath, recursive=TRUE)
 }
-
-# Creates list of period for trend analysis
-period_trend = NULL
-if (!is.null(periodAll)) {
-    period_trend = append(period_trend, list(periodAll))
-}
-if (!is.null(periodSub)) {
-    period_trend = append(period_trend, list(periodSub))
-}
-if (!is.null(period_trend)) {
-    period_trend = lapply(period_trend, as.Date)
-}
-if (length(period_trend) == 1) {
-    period_trend = period_trend[[1]]
-}
-
-# Creates list of period for average analysis
-period_change = NULL
-if (!is.null(periodRef)) {
-    period_change = append(period_change, list(periodRef))
-}
-if (!is.null(periodCur)) {
-    period_change = append(period_change, list(periodCur))
-}
-if (!is.null(period_change)) {
-    period_change = lapply(period_change, as.Date)
-}
-
-input_period_trend = sapply(period_trend, paste, collapse='/')
 
 delete_tmp = FALSE
 read_tmp = FALSE
