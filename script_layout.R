@@ -140,6 +140,8 @@ for (sheet in sheet_list) {
             meta_type,
             # code_selection=Code_Sen,
             show_MK=FALSE,
+            period_to_show=format(as.Date(period_Sen),
+                                  "%d/%m/%Y"),
             icon_path=icon_path,
             logo_path=logo_path,
             is_foot=TRUE,
@@ -184,6 +186,8 @@ for (sheet in sheet_list) {
             meta_type,
             # code_selection=Code_MK,
             show_MK=TRUE,
+            period_to_show=format(as.Date(period_MK),
+                                  "%d/%m/%Y"),
             icon_path=icon_path,
             logo_path=logo_path,
             is_foot=TRUE,
@@ -362,19 +366,9 @@ if ('plot_doc' %in% to_do) {
         listfile_path = c(summary_path, listfile_path)
     }
 
-    # if (!is.null(chunkname)) {            
-    #     pdf_combine(input=listfile_path,
-    #                 output=file.path(today_figdir,
-    #                                  doc_title_ns,
-    #                                  docname,
-    #                                  paste0(docname,
-    #                                         ".pdf")))
-        
-    # } else {
-        pdf_combine(input=listfile_path,
-                    output=file.path(today_figdir,
-                                     doc_title_ns,
-                                     paste0(doc_title_ns,
-                                            ".pdf")))
-    # }
+    pdf_combine(input=listfile_path,
+                output=file.path(today_figdir,
+                                 doc_title_ns,
+                                 paste0(doc_title_ns,
+                                        ".pdf")))
 }

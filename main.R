@@ -145,9 +145,9 @@ to_do =
         # 'extract_data',
         # 'save_data'
         # 'read_tmp'
-        'read_saving',
-        # 'plot_sheet'
-        'plot_doc'
+        # 'read_saving',
+        'plot_sheet'
+        # 'plot_doc'
     )
 
 extract_data =
@@ -171,7 +171,7 @@ plot_sheet =
     c(
         # 'sommaire'
         # 'fiche_stationnarity_station_nat'
-        'fiche_stationnarity_station_inf'
+        # 'fiche_stationnarity_station_inf'
         # 'carte_stationnarity_Sen'
         # 'carte_stationnarity_MK'
     )
@@ -416,6 +416,81 @@ doc_analyse_stationnarity =
                 'fiche_stationnarity_station_nat',
                 'fiche_stationnarity_station_inf')
     )
+
+
+
+
+spline_to_day = function (data, Xname, Yname, ...) {
+    ok = !is.na(data[[Xname]]) & !is.na(data[[Yname]])
+    X = as.numeric(seq.Date(min(data[[Xname]], na.rm=TRUE),
+                            max(data[[Xname]], na.rm=TRUE),
+                            "years"))
+    SS = predict(smooth.spline(as.numeric(data[[Xname]][ok]),
+                               data[[Yname]][ok], ...),
+                 X)
+    data = dplyr::tibble(!!Xname:=as.Date(SS$x),
+                         !!Yname:=SS$y)
+    return (data)
+}
+
+# dataEX = reframe(mutate(
+#     group_by(dataEX_SMEAG_hydrologie_Sen[[var]], code),
+#     !!paste0(var, "_nat"):=
+#         get(paste0(var, "_nat")) /
+#         mean(get(paste0(var, "_nat")),
+#              na.rm=TRUE)),
+#     spline_to_day(.data,
+#                   "date", paste0(var, "_nat")))
+
+
+# Variable = names(dataEX_SMEAG_hydrologie_Sen)
+
+# for (var in Variable) {
+#     plot = ggplot() + theme_IPCC() +
+#         geom_line(
+#             data=mutate(
+#                 group_by(dataEX_SMEAG_hydrologie_Sen[[var]], code),
+#                 !!paste0(var, "_nat"):=
+#                     get(paste0(var, "_nat")) /
+#                     mean(get(paste0(var, "_nat")),
+#                          na.rm=TRUE)),
+#             aes(x=date,
+#                 y=get(paste0(var, "_nat")),
+#                 group=code),
+#             color=IPCCgrey13, alpha=0.6, lineend="round") +
+        
+#         ggtitle(TeX(paste0("Groupe Sen naturel - \\textbf{",
+#                            var, "} \\small{normalisé}"))) +
+        
+#         scale_y_continuous(expand=c(0, 0), limits=c(0, NA))
+    
+#     ggsave(plot,
+#            filename=file.path(today_figdir, paste0(var, "_Sen.pdf")),
+#            width=20, height=12, units="cm")
+
+#     plot = ggplot() + theme_IPCC() +
+#         geom_line(
+#             data=mutate(
+#                 group_by(dataEX_SMEAG_hydrologie_MK[[var]], code),
+#                 !!paste0(var, "_nat"):=
+#                     get(paste0(var, "_nat")) /
+#                     mean(get(paste0(var, "_nat")),
+#                          na.rm=TRUE)),
+#             aes(x=date,
+#                 y=get(paste0(var, "_nat")),
+#                 group=code),
+#             color=IPCCgrey13, alpha=0.6, lineend="round") +
+        
+#         ggtitle(TeX(paste0("Groupe MK naturel - \\textbf{",
+#                            var, "} \\small{normalisé}"))) +
+        
+#         scale_y_continuous(expand=c(0, 0), limits=c(0, NA))
+    
+#     ggsave(plot,
+#            filename=file.path(today_figdir, paste0(var, "_MK.pdf")),
+#            width=20, height=12, units="cm")
+# }
+
 
 
 
