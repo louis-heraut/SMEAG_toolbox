@@ -343,8 +343,8 @@ saving_format =
 
 ## 4. READ_SAVING ____________________________________________________
 read_saving =
-    gsub("[-]", "_", Sys.Date())
-    # "2024_03_08"
+    # gsub("[-]", "_", Sys.Date())
+    "2024_03_14"
 
 var2search =
     c(
@@ -420,28 +420,49 @@ doc_analyse_stationnarity =
 
 
 
-spline_to_day = function (data, Xname, Yname, ...) {
-    ok = !is.na(data[[Xname]]) & !is.na(data[[Yname]])
-    X = as.numeric(seq.Date(min(data[[Xname]], na.rm=TRUE),
-                            max(data[[Xname]], na.rm=TRUE),
-                            "years"))
-    SS = predict(smooth.spline(as.numeric(data[[Xname]][ok]),
-                               data[[Yname]][ok], ...),
-                 X)
-    data = dplyr::tibble(!!Xname:=as.Date(SS$x),
-                         !!Yname:=SS$y)
-    return (data)
-}
+# spline_to_day = function (data, Xname, Yname, ...) {
+#     ok = !is.na(data[[Xname]]) & !is.na(data[[Yname]])
+#     X = as.numeric(seq.Date(min(data[[Xname]], na.rm=TRUE),
+#                             max(data[[Xname]], na.rm=TRUE),
+#                             "days"))
+#     SS = predict(smooth.spline(as.numeric(data[[Xname]][ok]),
+#                                data[[Yname]][ok], ...),
+#                  X)
+#     data = dplyr::tibble(!!Xname:=as.Date(SS$x),
+#                          !!Yname:=SS$y)
+#     return (data)
+# }
 
-# dataEX = reframe(mutate(
-#     group_by(dataEX_SMEAG_hydrologie_Sen[[var]], code),
-#     !!paste0(var, "_nat"):=
-#         get(paste0(var, "_nat")) /
-#         mean(get(paste0(var, "_nat")),
-#              na.rm=TRUE)),
-#     spline_to_day(.data,
-#                   "date", paste0(var, "_nat")))
+# dataEX =
+#     select(dataEX_SMEAG_hydrologie_MK$QSA_JJASON,
+#            code, date, QA=QSA_JJASON_nat)
+# > dataEX
+# # A tibble: 3,368 × 3
+#    code     date          QA
+#    <chr>    <date>     <dbl>
+#  1 O0200020 1970-06-01  66.4
+#  2 O0200020 1971-06-01  66.3
+#  3 O0200020 1972-06-01  86.4
+#  4 O0200020 1973-06-01  49.6
+#  5 O0200020 1974-06-01  73.0
+#  6 O0200020 1975-06-01  72.5
+#  7 O0200020 1976-06-01  46.5
+#  8 O0200020 1977-06-01 110. 
+#  9 O0200020 1978-06-01  91.8
+# 10 O0200020 1979-06-01  74.6
 
+# dataEX_ss =
+#     reframe(group_by(dataEX, code),
+#             spline_to_day(.data, "date", "QA",
+#                           spar=0.1, df=3))
+
+# ggplot() + theme_light() +
+#     geom_line(data=dataEX,
+#               aes(date, QA, group=code), color="blue") +
+#     geom_line(data=dataEX_ss,
+#               aes(date, QA, group=code))
+
+    
 
 # Variable = names(dataEX_SMEAG_hydrologie_Sen)
 
