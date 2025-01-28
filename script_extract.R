@@ -77,7 +77,6 @@ if ('extract_data' %in% to_do) {
                               rm_duplicates=TRUE,
                               dev=FALSE,
                               verbose=verbose)
-
         dataEX = res$dataEX
         metaEX = res$metaEX
 
@@ -97,6 +96,7 @@ if ('extract_data' %in% to_do) {
                     dataEX=dataEX[[i]],
                     metaEX=metaEX,
                     MK_level=level,
+                    time_dependency_option="AR1",
                     suffix=extract$suffix,
                     period_trend=extract$period,
                     # period_change=period_change,

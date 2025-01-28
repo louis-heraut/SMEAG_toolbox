@@ -87,8 +87,8 @@ regionHydro_shp_path = 'regionHydro/regionHydro.shp'
 # Path to the shapefile for sub-basin shape from 'computer_data_path' 
 secteurHydro_shp_path = 'secteurHydro/secteurHydro.shp'
 # Path to the shapefile for station basins shape from 'computer_data_path' 
-entiteHydro_shp_path = c('entiteHydro/BV_4207_stations.shp', 'entiteHydro/3BVs_FRANCE_L2E_2018.shp')
-entiteHydro_coord = c('L93', 'L2')
+entiteHydro_shp_path = c('entiteHydro/BV_4207_stations.shp',
+                         'entiteHydro/3BVs_FRANCE_L2E_2018.shp')
 river_shp_path = 'coursEau/CoursEau_FXX.shp'
 
 
@@ -99,13 +99,13 @@ now = format(Sys.time(), "%H_%M_%S")
 
 ### 3.1. Results _____________________________________________________
 resdir = file.path(computer_work_path, 'results')
-today_resdir = file.path(computer_work_path, 'results', today)
-now_resdir = file.path(computer_work_path, 'results', today, now)
+today_resdir = file.path(resdir, today)
+now_resdir = file.path(today_resdir, now)
 
 ### 3.2. Figures  ____________________________________________________
 figdir = file.path(computer_work_path, 'figures')
-today_figdir = file.path(computer_work_path, 'figures', today)
-now_figdir = file.path(computer_work_path, 'figures', today, now)
+today_figdir = file.path(figdir, today)
+now_figdir = file.path(today_figdir, now)
 
 ### 3.3. Tmp  ________________________________________________________
 tmpdir = "tmp"

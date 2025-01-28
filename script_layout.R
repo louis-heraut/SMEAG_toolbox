@@ -67,7 +67,7 @@ if (!exists("Shapefiles")) {
         bassinHydro_shp_path,
         regionHydro_shp_path,
         secteurHydro_shp_path,
-        entiteHydro_shp_path, entiteHydro_coord,
+        entiteHydro_shp_path,
         entitePiezo_shp_path=NULL,
         river_shp_path,
         river_selection=river_selection,

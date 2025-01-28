@@ -143,11 +143,11 @@ to_do =
         # 'delete_tmp',
         # 'create_data',
         # 'extract_data',
-        # 'save_data'
+        # 'save_data',
         # 'read_tmp'
         # 'read_saving',
-        'plot_sheet'
-        # 'plot_doc'
+        # 'plot_sheet'bleu
+        'plot_doc'
     )
 
 extract_data =
@@ -170,7 +170,7 @@ extract_data =
 plot_sheet =
     c(
         # 'sommaire'
-        # 'fiche_stationnarity_station_nat'
+        'fiche_stationnarity_station_nat'
         # 'fiche_stationnarity_station_inf'
         # 'carte_stationnarity_Sen'
         # 'carte_stationnarity_MK'
@@ -218,7 +218,6 @@ codes_to_use =
         # '^O'
     )
 
-
 # Local corrections of the data
 flag = dplyr::tibble(
     code=c('O3141010',
@@ -259,7 +258,7 @@ SMEAG_hydrologie_MK =
     list(name='SMEAG_hydrologie_MK',
          type="serie",
          variables=c(
-             "Q_JJASON"="QSA_JJASON",
+             "Q_JJASO"="QSA_JJASO",
              "QMNA",
              "VCN10",
              "VCN30",
@@ -286,7 +285,7 @@ SMEAG_hydrologie_Sen =
     list(name='SMEAG_hydrologie_Sen',
          type="serie",
          variables=c(
-             "Q_JJASON"="QSA_JJASON",
+             "Q_JJASO"="QSA_JJASO",
              "QMNA",
              "VCN10",
              "VCN30",
@@ -344,7 +343,7 @@ saving_format =
 ## 4. READ_SAVING ____________________________________________________
 read_saving =
     # gsub("[-]", "_", Sys.Date())
-    "2024_03_14"
+    "2024_06_10"
 
 var2search =
     c(
@@ -359,15 +358,18 @@ var2search =
 ## 5. PLOT_SHEET _____________________________________________________
 # If the hydrological network needs to be plot
 river_selection =
-    NULL
-    # c('La Seine$', "'Yonne$", 'La Marne$', 'La Meuse', 'La Moselle$',
-    #   '^La Loire$', '^la Loire$', '^le cher$', '^La Creuse$',
-    #   '^la Creuse$', '^La Vienne$', '^la Vienne$', 'La Garonne$',
-    #   'Le Tarn$', 'Le Rhône$', 'La Saône$')
-
+    # NULL
+    c("la Durance", "la Marne", "la Vienne", "le Loir", "la Loire",
+      "l'Oise", "la Seine", "le Lot", "l'Adour", "le Rhône",
+      "la Moselle", "l'Aisne", "la Garonne", "le Tarn", "le Doubs",
+      "la Dordogne", "la Charente", "le Cher", "la Saône", "l'Allier",
+      "Fleuve la Loire", "la Meuse", "la Sarthe", "la Somme",
+      "l'Isère", "la Vilaine", "l'Aude", "l'Yonne")
+river_selection = paste0("^", river_selection, "$")
 river_length =
     # NULL
-    300000
+    30000
+    # 300000
     
 # Tolerance of the simplification algorithm for shapefile in sf
 toleranceRel =
@@ -420,18 +422,18 @@ doc_analyse_stationnarity =
 
 
 
-# spline_to_day = function (data, Xname, Yname, ...) {
-#     ok = !is.na(data[[Xname]]) & !is.na(data[[Yname]])
-#     X = as.numeric(seq.Date(min(data[[Xname]], na.rm=TRUE),
-#                             max(data[[Xname]], na.rm=TRUE),
-#                             "days"))
-#     SS = predict(smooth.spline(as.numeric(data[[Xname]][ok]),
-#                                data[[Yname]][ok], ...),
-#                  X)
-#     data = dplyr::tibble(!!Xname:=as.Date(SS$x),
-#                          !!Yname:=SS$y)
-#     return (data)
-# }
+spline_to_date = function (data, Xname, Yname, ...) {
+    ok = !is.na(data[[Xname]]) & !is.na(data[[Yname]])
+    X = as.numeric(seq.Date(min(data[[Xname]], na.rm=TRUE),
+                            max(data[[Xname]], na.rm=TRUE),
+                            "years"))
+    SS = predict(smooth.spline(as.numeric(data[[Xname]][ok]),
+                               data[[Yname]][ok], ...),
+                 X)
+    data = dplyr::tibble(!!Xname:=as.Date(SS$x),
+                         !!Yname:=SS$y)
+    return (data)
+}
 
 # dataEX =
 #     select(dataEX_SMEAG_hydrologie_MK$QSA_JJASON,
@@ -454,7 +456,7 @@ doc_analyse_stationnarity =
 # dataEX_ss =
 #     reframe(group_by(dataEX, code),
 #             spline_to_day(.data, "date", "QA",
-#                           spar=0.1, df=3))
+#                           spar=1.1, df=3))
 
 # ggplot() + theme_light() +
 #     geom_line(data=dataEX,
@@ -595,6 +597,7 @@ if (any(grepl("plot", to_do))) {
     }
     
     library(ggplot2)
+    library(ggtext)
     library(scales)
     library(qpdf)
     library(gridExtra)
